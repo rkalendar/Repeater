@@ -20,7 +20,7 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 m
 Common options:
 kmer= minimal kmer=5 (default kmer=12)
 
-min= minimal repeat length is kmer length (default min=50)
+min= minimal repeat length (default min=50)
 
 mask= generate a new file with masking repeats (default mask=true)
 
