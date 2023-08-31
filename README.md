@@ -27,7 +27,7 @@ mask=true/false generate a new file with masking repeats (default mask=true)
 
 seqshow=true/false extract repeat sequences (default seqshow=false)
 
-flangs=true/false extracts sequences around the repeat (50 bp) (default flangs=false)
+flangs=true/false extracts sequences around the repeat (50 nt) (default flangs=false)
 
 quick=true/false quick analysis of repeats, without deep analysis and their clustering (default quick=true)
 
