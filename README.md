@@ -18,17 +18,17 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 m
 
 
 Common options:
-kmer= minimal kmer=5 (default kmer=12)
+kmer=12 minimal kmer=5 (default kmer=12)
 
-min= minimal repeat length (default min=50)
+min=50 minimal repeat length (default min=50)
 
-mask= generate a new file with masking repeats (default mask=true)
+mask=true/false generate a new file with masking repeats (default mask=true)
 
-seqshow= extract repeat sequences (default seqshow=false)
+seqshow=true/false extract repeat sequences (default seqshow=false)
 
-flangs= extracts sequences around the repeat (50 bp) (default flangs=false)
+flangs=true/false extracts sequences around the repeat (50 bp) (default flangs=false)
 
-quick= quick analysis of repeats, without deep analysis and their clustering (default quick=true)
+quick=true/false quick analysis of repeats, without deep analysis and their clustering (default quick=true)
 
 
 
