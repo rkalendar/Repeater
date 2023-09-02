@@ -15,7 +15,7 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 min=100 quick=false mask=false seqshow=true
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true flangs=100
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true flanks=100
 
 
 Common options:
@@ -26,7 +26,7 @@ kmer=9 minimal kmer=5 (default kmer=12)
 
 min=50 minimal repeat length (default min=50)
 
-flangs=100 extracts sequences around the repeat (100 nt) (default flangs=0)
+flanks=100 extracts sequences around the repeat (100 nt) (default flanks=0)
 
 mask=true/false generate a new file with masking repeats (default mask=true)
 
