@@ -26,7 +26,7 @@ kmer=9 minimal kmer=5 (default kmer=12)
 
 min=50 minimal repeat length (default min=50)
 
-flanks=100 extracts sequences around the repeat (100 nt) (default flanks=0)
+flanks=100 extend the flanks of the repeat with an appropriate length (100 nt) (default flanks=0)
 
 mask=true/false generate a new file with masking repeats (default mask=true)
 
