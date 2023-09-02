@@ -15,7 +15,7 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 min=100 quick=false mask=false seqshow=true
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true flanks=100
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true seqshow=true flanks=100
 
 
 Common options:
