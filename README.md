@@ -3,11 +3,11 @@ Genome-wide tool for sensitive de novo identification of interspersed and tandem
 
 To run the project from the command line, go to the dist folder and type the following:
 
-java -jar Repeater2.jar <inputfile>  
+java -jar Repeater2.jar inputfile 
 
 Basic usage:
 
-java -jar \Repeater2\dist\Repeater2.jar <inputfilepath> optional_commands
+java -jar \Repeater2\dist\Repeater2.jar inputfilepath optional_commands
 
 Examples:
 
