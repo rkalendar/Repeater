@@ -3,7 +3,7 @@ Genome-wide tool for sensitive de novo identification of interspersed and tandem
 
 To run the project from the command line, go to the dist folder and type the following:
 
-java -jar Repeater2.jar inputfile 
+java -jar Repeater2.jar inputfilepath 
 
 Basic usage:
 
@@ -22,7 +22,7 @@ Common options:
 
 ssr=true analyzing only the SSR/telomers loci (default ssr=false)
 
-kmer=9 minimal kmer=5 (default kmer=12)
+kmer=5 minimal kmer=5 (default kmer=12)
 
 min=50 minimal repeat length (default min=50)
 
