@@ -1,5 +1,5 @@
 REPEATER v2 by Ruslan Kalendar
-Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats
+"Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats"
 
 To run the project from the command line, go to the dist folder and type the following:
 
