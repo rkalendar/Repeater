@@ -7,7 +7,7 @@ java -jar Repeater2.jar inputfilepath
 
 Basic usage:
 
-java -jar \Repeater2\dist\Repeater2.jar inputfilepath optional_commands
+java -jar -Xms4g -Xmx16g \Repeater2\dist\Repeater2.jar inputfilepath optional_commands
 
 Examples:
 
