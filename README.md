@@ -13,7 +13,7 @@ Examples:
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta 
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 min=100 quick=false mask=false seqshow=true
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta kmer=21 min=50 sln=250 quick=false mask=false seqshow=true
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true seqshow=true flanks=100
 
@@ -22,9 +22,11 @@ Common options:
 
 ssr=true analyzing only the SSR/telomers loci (default ssr=false)
 
-kmer=5 minimal kmer=5 (default kmer=12)
+kmer=5	 minimal kmer=5 (default kmer=21)
 
-min=50 minimal repeat length (default min=50)
+min=50	 initial repeat length (default min=50)
+
+sln=150	 string length (default sln=150)
 
 flanks=100 extend the flanks of the repeat with an appropriate length (100 nt) (default flanks=0)
 
