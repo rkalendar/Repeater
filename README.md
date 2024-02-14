@@ -27,7 +27,9 @@ Large genome usage:
 java -jar -Xms4g -Xmx32g \Repeater2\dist\Repeater2.jar inputfilepath kmer=12 min=50 sln=100
 
 Analysing all files in the directory:
+
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=12 min=50 sln=100
+
 
 Common options:
 
