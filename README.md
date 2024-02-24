@@ -7,7 +7,7 @@ web: https://primerdigital.com/tools/
 
 To run the project from the command line, go to the dist folder and type the following:
 
-java -jar Repeater2.jar inputfilepath/Folder 
+java -jar Repeater2.jar inputfilepath/orFolder 
 
 Basic usage:
 
@@ -26,7 +26,7 @@ Large genome usage:
 
 java -jar -Xms4g -Xmx32g \Repeater2\dist\Repeater2.jar inputfilepath kmer=12 min=50 sln=100
 
-Analysing all files in the directory:
+Analyzing all files in the folder:
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=12 min=50 sln=100
 
