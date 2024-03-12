@@ -5,13 +5,13 @@ email: ruslan.kalendar@helsinki.fi
 web: https://primerdigital.com/tools/
 
 
-To run the project from the command line, go to the dist folder and type the following:
+To run the project from the command line, go to the target folder and type the following; an individual file or a file folder can be specified:
 
-java -jar Repeater2.jar inputfilepath/orFolder 
+java -jar Repeater2.jar input_file_path/Folder_path 
 
 Basic usage:
 
-java -jar \Repeater2\dist\Repeater2.jar inputfilepath optional_commands
+java -jar \Repeater2\dist\Repeater2.jar input_file_path optional_commands
 
 
 Examples:
@@ -24,7 +24,7 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true 
 
 Large genome usage:
 
-java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar inputfilepath kmer=21 image=10000x5000
+java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
 
 Analyzing all files in the folder:
 
