@@ -26,11 +26,11 @@ java -jar \Repeater2\dist\Repeater2.jar input_file_path optional_commands
 
 Examples:
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta 
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\4.txt
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ef067844.fasta ssr=true seqshow=true flanks=100
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\2.txt ssr=true seqshow=true flanks=100
 
 Large genome usage:
 
