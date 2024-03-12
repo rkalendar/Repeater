@@ -6,8 +6,8 @@ web: https://primerdigital.com/tools/
 
 Availability and requirements:
 Operating system(s): Platform independent
-Programming language: Java
-Other requirements: Java 20 or higher
+Programming language: Java 20 or higher
+
 Java Downloads:
 https://www.oracle.com/java/technologies/downloads/
 
