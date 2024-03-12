@@ -1,11 +1,15 @@
 REPEATER v2
 "Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats"
 by Ruslan Kalendar 
+
 email: ruslan.kalendar@helsinki.fi
+
 web: https://primerdigital.com/tools/
 
 Availability and requirements:
+
 Operating system(s): Platform independent
+
 Programming language: Java 20 or higher
 
 Java Downloads:
