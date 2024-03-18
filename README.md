@@ -61,6 +61,22 @@ flanks=100 extend the flanks of the repeat with an appropriate length (100 nt) (
 
 mask=true/false generate a new file with masking repeats (default mask=true)
 
+
+
+
+Sequence Entry:
+
+Sequence data files are prepared using a text editor and saved in ASCII as text/plain format (.txt) or in .fasta or without file extensions (a file extension is not obligatory). The programme takes a single sequence or accepts multiple separate DNA sequences in FASTA, tabulated format. The template length is not limited.
+
+FASTA format description
+
+A sequence in FASTA format consists of:
+One line starts with a ">" sign, followed by a sequence identification code. A textual description of the sequence optionally follows it. Since it is not part of the official format description, software can ignore it when it is present.
+One or more lines containing the sequence itself. A file in FASTA format may comprise more than one sequence.
+
+
+
+
 seqshow=true/false extract repeat sequences (default seqshow=false)
 
 quick=true/false quick analysis of repeats, without deep analysis and their clustering (default quick=true)
