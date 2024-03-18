@@ -76,3 +76,6 @@ A sequence in FASTA format consists of:
 One line starts with a ">" sign and a sequence identification code. A textual description of the sequence optionally follows it. Since it is not part of the official format description, software can ignore it when it is present.
 One or more lines containing the sequence itself. A file in FASTA format may comprise more than one sequence.
 
+
+
+The output is saved in GFF3 files: nine-column, tab-delimited, plain text files. 
