@@ -1,18 +1,18 @@
-REPEATER v2
-"Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats"
+##   REPEATER v2
+## "Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats"
 by Ruslan Kalendar 
 
 email: ruslan.kalendar@helsinki.fi
 
 web: https://primerdigital.com/tools/
 
-Availability and requirements:
+## Availability and requirements:
 
 Operating system(s): Platform independent
 
 Programming language: Java 20 or higher
 
-Java Downloads:
+## Java Downloads:
 https://www.oracle.com/java/technologies/downloads/
 
 How do I set or change the Java path system variable:
@@ -23,12 +23,12 @@ To run the project from the command line, go to the target folder and type the f
 
 java -jar Repeater2.jar input_file_path/Folder_path 
 
-Basic usage:
+### Basic usage:
 
 java -jar \Repeater2\dist\Repeater2.jar input_file_path optional_commands
 
 
-Examples:
+### Examples:
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\4.txt
 
@@ -36,7 +36,7 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=250
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\2.txt ssr=true seqshow=true flanks=100
 
-Large genome usage:
+### Large genome usage:
 
 java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
 
@@ -45,7 +45,7 @@ Analyzing all files in the folder:
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=300
 
 
-Common options:
+### Common options:
 
 ssr=true analyzing only the SSR/telomers loci (default ssr=false)
 
@@ -67,15 +67,15 @@ quick=true/false quick analysis of repeats, without deep analysis and their clus
 
 
 
-Sequence Entry:
+## Sequence Entry:
 
 Sequence data files are prepared using a text editor and saved in ASCII as text/plain format (.txt) or in .fasta or without file extensions (a file extension is not obligatory). The program takes a single sequence or accepts multiple DNA sequences in FASTA format. The template length is not limited.
 
-FASTA format description:
+## FASTA format description:
 A sequence in FASTA format consists of:
 One line starts with a ">" sign and a sequence identification code. A textual description of the sequence optionally follows it. Since it is not part of the official format description, software can ignore it when it is present.
 One or more lines containing the sequence itself. A file in FASTA format may comprise more than one sequence.
 
 
 
-The output is saved in GFF3 files: nine-column, tab-delimited, plain text files. 
+##The output is saved in GFF3 files: nine-column, tab-delimited, plain text files. 
