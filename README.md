@@ -1,5 +1,5 @@
-REPEATER v2
-Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats.
+#REPEATER v2
+##Genome-wide tool for sensitive de novo identification of interspersed and tandem repeats.
 by Ruslan Kalendar 
 
 email: ruslan.kalendar@helsinki.fi
@@ -12,7 +12,7 @@ Operating system(s): Platform independent
 
 Programming language: Java 20 or higher
 
-Java Downloads:
+## Java Downloads:
 https://www.oracle.com/java/technologies/downloads/
 
 How do I set or change the Java path system variable:
@@ -28,7 +28,7 @@ java -jar Repeater2.jar input_file_path/Folder_path
 java -jar \Repeater2\dist\Repeater2.jar input_file_path optional_commands
 
 
-Examples:
+### Examples:
 
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\4.txt
 
@@ -67,7 +67,7 @@ quick=true/false quick analysis of repeats, without deep analysis and their clus
 
 
 
-Sequence Entry:
+## Sequence Entry:
 
 Sequence data files are prepared using a text editor and saved in ASCII as text/plain format (.txt) or in .fasta or without file extensions (a file extension is not obligatory). The program takes a single sequence or accepts multiple DNA sequences in FASTA format. The template length is not limited.
 
