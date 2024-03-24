@@ -82,6 +82,6 @@ One or more lines containing the sequence itself. A file in FASTA format may com
 
 
 
-## The output is saved in GFF3 files: nine-column, tab-delimited, plain text files. 
+## The output is saved in GFF3 file: nine-column, tab-delimited, plain text file. 
 
 
