@@ -45,6 +45,7 @@ Analyzing all files in the folder:
 
 **Common options:**
 
+```
 ssr=true analyzing only the SSR/telomers loci (default ssr=false)
 
 kmer=5	 minimal kmer=5 (default kmer=12)
@@ -63,7 +64,7 @@ seqshow=true/false extract repeat sequences (default seqshow=false)
 
 quick=true/false quick analysis of repeats, without deep analysis and their clustering (default quick=true)
 
-
+```
 
 ## Sequence Entry:
 
