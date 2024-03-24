@@ -37,11 +37,15 @@ java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\2.txt ssr=true seqshow=t
 ```
 
 ### Large genome usage:
-```java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000```
+```
+java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
+```
 
 Analyzing all files in the folder:
 
-```java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=300```
+```
+java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=300
+```
 
 
 **Common options:**
