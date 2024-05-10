@@ -822,7 +822,7 @@ public final class Tandems {
                 }
                 char[] c = seq[n].toCharArray();
                 for (int i = 0; i < l; i++) {
-                    if (m[i] == 4) {
+                    if (m[i] == 0) {
                         z++;
                         c[i] = (char) (c[i] - 32);
                     }
