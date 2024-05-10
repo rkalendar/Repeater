@@ -87,14 +87,14 @@ One or more lines containing the sequence itself. A file in FASTA format may com
 GFF format General Feature Format describes genes and other features associated with DNA, RNA and Protein sequences. GFF lines have nine tab-separated fields:
 Generic Feature Format Version 3 (GFF3) 
 https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-1. seqid - Must be a chromosome or scaffold or contig.
+1. seqid - a cluster.
 2. source - The program that generated this feature.
 3. type - "repeat".
 4. start - The starting position of the feature in the sequence. The first base is numbered 1.
 5. stop - The ending position of the feature (inclusive).
 6. score - length 
 7. strand - Valid entries include '+', '-', or '.' (for don't know/care).
-8. phase—If the feature is a coding exon, the frame should be a number between 0 and 2 that represents the reading frame of the first base. If the feature is not a coding exon, the value should be '.'
+8. phase—If the feature is a coding exon, the frame should be a number between 0 and 2, representing the first base's reading frame. If the feature is not a coding exon, the value should be '.'
 9. attributes - All lines with the same group are linked into a single item.
  
 
