@@ -791,7 +791,7 @@ public final class Tandems {
             return;
         }
         int k = 0;
-        double z = 0;
+        double z = numnonn;
         int l = seq[n].length();
         int v = numnonn;
         long duration = (System.nanoTime() - startTime) / 1000000000;
@@ -823,7 +823,7 @@ public final class Tandems {
                 char[] c = seq[n].toCharArray();
                 for (int i = 0; i < l; i++) {
                     if (m[i] == 0) {
-                        z++;
+                        z--;
                         c[i] = (char) (c[i] - 32);
                     }
                 }
@@ -900,7 +900,7 @@ public final class Tandems {
 //                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
                                 fileWriter.write(sr.toString());
                             } else {
-                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");                      
+                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
 //                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
                                 fileWriter.write(sr.toString());
                             }
@@ -909,7 +909,7 @@ public final class Tandems {
                 }
             }
         }
-/*
+        /*
 GFF format General Feature Format is a format for describing genes and other features associated with DNA, RNA and Protein sequences. GFF lines have nine tab-separated fields:
 Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
 1. seqid - Must be a chromosome or scaffold or contig.
@@ -921,7 +921,7 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
 7. strand - Valid entries include '+', '-', or '.' (for don't know/care).
 8. phase - If the feature is a coding exon, frame should be a number between 0-2 that represents the reading frame of the first base. If the feature is not a coding exon, the value should be '.'.
 9. attributes - All lines with the same group are linked together into a single item.
-*/
+         */
     }
 
     private void PictureSave(int n, int dw, int dh) throws IOException {
