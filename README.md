@@ -31,7 +31,7 @@ To run the project from the command line, go to the target folder and type the f
 
 ### Examples:
 ```
-C:\graalvm22\bin\java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=21 min=100 sln=150 image=5000x3000
+java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=21 min=100 sln=150 image=5000x3000
 
 java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt
 
