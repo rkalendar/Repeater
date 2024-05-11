@@ -21,20 +21,23 @@ How do I set or change [the Java path system variable](https://www.java.com/en/d
 
 To run the project from the command line, go to the target folder and type the following; an individual file or a file folder can be specified:
 
-```java -jar Repeater2.jar input_file_path/Folder_path```
+```java -jar Repeater2.jar <input_file_path/Folder_path>```
+
 
 ### Basic usage:
 
-```java -jar \dist\Repeater2.jar input_file_path optional_commands```
+```java -jar <Repeater2Path>\dist\Repeater2.jar <input_file_path> optional_commands```
 
 
 ### Examples:
 ```
-java -jar \dist\Repeater2.jar \test\4.txt
+C:\graalvm22\bin\java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=21 min=100 sln=150 image=5000x3000
 
-java -jar \dist\Repeater2.jar \test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt
 
-java -jar \dist\Repeater2.jar \test\2.txt ssr=true seqshow=true flanks=100
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
+
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\2.txt ssr=true seqshow=true flanks=100
 ```
 
 ### Large genome usage:
