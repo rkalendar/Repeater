@@ -1,7 +1,8 @@
 ## REPEATER v2
 ## Genome-wide tool for sensitive de novo identification and visualisation of interspersed and tandem repeats.
-By Ruslan Kalendar 
 
+## Author
+Ruslan Kalendar 
 email: ruslan.kalendar@helsinki.fi
 
 [Web](https://primerdigital.com/tools/)
