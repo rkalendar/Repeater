@@ -25,21 +25,21 @@ To run the project from the command line, go to the target folder and type the f
 
 ### Basic usage:
 
-```java -jar \Repeater2\dist\Repeater2.jar input_file_path optional_commands```
+```java -jar \dist\Repeater2.jar input_file_path optional_commands```
 
 
 ### Examples:
 ```
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\4.txt
+java -jar \dist\Repeater2.jar \test\4.txt
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
+java -jar \dist\Repeater2.jar \test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
 
-java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\2.txt ssr=true seqshow=true flanks=100
+java -jar \dist\Repeater2.jar \test\2.txt ssr=true seqshow=true flanks=100
 ```
 
 ### Large genome usage:
 ```
-java -jar -Xms8g -Xmx32g \Repeater2\dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
+java -jar -Xms8g -Xmx32g \dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
 ```
 
 Analysing all files in the folder:
