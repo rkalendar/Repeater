@@ -5,7 +5,7 @@
 Ruslan Kalendar 
 email: ruslan.kalendar@helsinki.fi
 
-[Web](https://primerdigital.com/tools/)
+[Web](http://primerdigital.com/tools/fastpcr.html)
 
 ## Availability and requirements:
 
@@ -21,12 +21,12 @@ How do I set or change [the Java path system variable](https://www.java.com/en/d
 
 To run the project from the command line, go to the target folder and type the following; an individual file or a file folder can be specified:
 
-```java -jar Repeater2.jar <input_file_path/Folder_path>```
+```java -jar Repeater2.jar <target_file_path/Folder_path>```
 
 
 ### Basic usage:
 
-```java -jar <Repeater2Path>\dist\Repeater2.jar <input_file_path> optional_commands```
+```java -jar <Repeater2Path>\dist\Repeater2.jar <target_file_path> optional_commands```
 
 
 ### Examples:
@@ -97,7 +97,7 @@ https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
 4. start - The starting position of the feature in the sequence. The first base is numbered 1.
 5. stop - The ending position of the feature (inclusive).
 6. score - length 
-7. strand - Valid entries include '+', '-', or '.' (for don't know/care).
+7. strand - Valid entries include '+', '-', or '.' (for those who don't know/care).
 8. phase—If the feature is a coding exon, the frame should be a number between 0 and 2, representing the first base's reading frame. If the feature is not a coding exon, the value should be '.'
 9. attributes - All lines with the same group are linked into a single item.
  
