@@ -1,4 +1,4 @@
-## REPEATER v2
+## REPEATER2
 ## Genome-wide tool for sensitive de novo identification and visualisation of interspersed and tandem repeats.
 
 ## Author
