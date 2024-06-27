@@ -10,9 +10,8 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 12;
-            int minlen = 50;
-            int seqlen = 100;
+            int kmer = 21;
+            int seqlen = 50;
             int width = 0;
             int hight = 0;
             int flanksshow = 0;
@@ -83,16 +82,7 @@ public class Repeater {
                 }
             }
 
-            if (s.contains("min=")) {
-                int j = s.indexOf("min=");
-                int x = s.indexOf(" ", j);
-                if (x > j) {
-                    minlen = StrToInt(s.substring(j + 4, x));
-                }
-                if (minlen < kmer) {
-                    minlen = kmer;
-                }
-            }
+ 
 
             if (s.contains("sln=")) {
                 int j = s.indexOf("sln=");
@@ -100,8 +90,8 @@ public class Repeater {
                 if (x > j) {
                     seqlen = StrToInt(s.substring(j + 4, x));
                 }
-                if (seqlen < minlen) {
-                    seqlen = minlen;
+                if (seqlen < kmer) {
+                    seqlen = kmer;
                 }
             }
 
@@ -118,14 +108,14 @@ public class Repeater {
                     }
                     for (String nfile : filelist) {
                         try {
-                            SaveResult(nfile, kmer, minlen, seqlen, flanksshow, quickshow, maskshow, seqshow, ssrrun, width, hight);
+                            SaveResult(nfile, kmer,  seqlen, flanksshow, quickshow, maskshow, seqshow, ssrrun, width, hight);
                         } catch (Exception e) {
                             System.err.println("Failed to open file: " + nfile);
                         }
                     }
 
                 } else {
-                    SaveResult(infile, kmer, minlen, seqlen, flanksshow, quickshow, maskshow, seqshow, ssrrun, width, hight);
+                    SaveResult(infile, kmer, seqlen, flanksshow, quickshow, maskshow, seqshow, ssrrun, width, hight);
                 }
             }
 
@@ -134,9 +124,8 @@ public class Repeater {
             System.out.println("Basic usage:");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile>/<inputfolderpath> <optional_commands>");
             System.out.println("Common options:");
-            System.out.println("kmer=5\tminimal kmer=5 (default 12)");
-            System.out.println("min=100\tinitial repeat length (default min=50), it can be equal to kmer=");
-            System.out.println("sln=150\tstring length (default sln=100), it can be equal to min=");
+            System.out.println("kmer=5\tminimal kmer=5 (default 21)");
+            System.out.println("sln=150\tstring length (default sln=100), it can be equal to kmer=");
             System.out.println("flangs=100\textend the flanks of the repeat with an appropriate length (100 nt) (default flangs=0)");
             System.out.println("image=10000x3000\t (by default, the dimensionality of the image is automatically determined)");
             System.out.println("mask=true/false\tgenerate a new file with masking repeats (default mask=true)");
@@ -147,7 +136,7 @@ public class Repeater {
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 min=100 sln=300 quick=false mask=true\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
             System.out.println("Large genome settings:");
-            System.out.println("java -jar -Xms16g -Xmx32g \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 quick=false mask=true\n");
+            System.out.println("java -jar -Xms16g -Xmx64g \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 quick=false mask=true\n");
             System.out.println("Analysing all files in the directory:");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar \\Repeater2\\test\\ kmer=21 image=10000x3000 quick=false\n");
         }
@@ -173,7 +162,7 @@ public class Repeater {
         return (Integer.parseInt(r.toString()));
     }
 
-    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight) {
+    private static void SaveResult(String infile, int kmer,   int seqlen, int flanksshow, boolean quickshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight) {
         try {
             long startTime = System.nanoTime();
             byte[] binaryArray = Files.readAllBytes(Paths.get(infile));
@@ -188,8 +177,7 @@ public class Repeater {
             Tandems s2 = new Tandems();
             s2.SetSequences(rf.getSequences(), rf.getNames());
             s2.SetKmerLen(kmer);
-            s2.SetTandemLen(minlen);
-            s2.SetSequenceLen(seqlen);
+              s2.SetSequenceLen(seqlen);
             s2.SetMasked(maskshow);
             s2.SetShowSeq(seqshow);
             s2.SetFlanks(flanksshow);
@@ -207,8 +195,7 @@ public class Repeater {
                 s2.RunSSR();
             } else {
                 System.out.println("kmer=" + kmer);
-                System.out.println("Initial string length =" + minlen);
-                System.out.println("String length =" + seqlen);
+                System.out.println("Minimal repeat length =" + seqlen);
                 System.out.println("Quick analysis is " + quickshow);
                 s2.Run();
             }

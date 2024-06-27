@@ -28,8 +28,8 @@ public final class Tandems {
         if (kmerln < 5) {
             kmerln = 5;
         }
-        minlenblock = kmerln + kmerln;
-        minlenseq = minlenblock;
+        minkmerseq = kmerln + kmerln;
+        minlenseq = kmerln + kmerln;
     }
 
     public void SetImage(int w, int h) {
@@ -51,18 +51,10 @@ public final class Tandems {
         }
     }
 
-    public void SetTandemLen(int i) {
-        minlenblock = i;
-        if (minlenblock < mnblock) {
-            minlenblock = mnblock;
-        }
-        minlenseq = minlenblock;
-    }
-
     public void SetSequenceLen(int i) {
         minlenseq = i;
-        if (minlenseq < minlenblock) {
-            minlenseq = minlenblock;
+        if (minlenseq < kmerln) {
+            minlenseq = kmerln;
         }
     }
 
@@ -91,16 +83,20 @@ public final class Tandems {
     public void Run() throws IOException {
         startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
-            FindAllRepeats(seq[i], kmerln);
-            PrintResult(i);
+            numnonn = 0;
+            byte[] u = Mask(seq[i], kmerln);
+            u = MaskingFilter(u, minlenseq);
+            FindAllRepeats(seq[i], u, kmerln);
+            PrintResult(i, u);
             PictureSave(i, iwidth, iheight);
         }
     }
 
     public void RunSSR() throws IOException {
         for (int i = 0; i < nseq; i++) {
+            byte[] u = Mask(seq[i], kmerln);
             FindAllSSRs(seq[i], telomers);
-            PrintResult(i);
+            PrintResult(i, u);
             PictureSave(i, iwidth, iheight);
         }
     }
@@ -242,7 +238,7 @@ public final class Tandems {
         return bb.size();
     }
 
-    private int FindAllRepeats(String seq, int kmer) {
+    private int FindAllRepeats(String seq, byte[] b, int kmer) {
         int l = seq.length();
         int g = l + l + 1;
         int k = 0;
@@ -267,16 +263,11 @@ public final class Tandems {
         int[] ax = new int[kmer];
         int[] bx = new int[5];
 
-        byte b[] = seq.getBytes();
-        for (i = 0; i < l; i++) {
-            b[i] = tables.dx2[b[i]];
-        }
         b = ArrayExtendByte(b, l + 1);
-        b[l] = 4;
         for (i = 1; i < l + 1; i++) {
-            b[l + i] = tables.cdnat2[b[l - i]];
+            b[l + i] = b[l - i];
         }
-        numnonn = kmer - 1;
+
         for (i = 0; i < kmer - 1; i++) {
             ax[i] = b[i];
             bx[ax[i]]++;
@@ -284,8 +275,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[i];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                numnonn++;
+            if (bx[1] == kmer) {
                 s = seq.substring(i - kmer + 1, i + 1);
                 if (px2.containsKey(s)) {
                     p = px2.get(s)[0] + 1;
@@ -308,7 +298,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[l + i + 1];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
+            if (bx[1] == kmer) {
                 s = aseq.substring(i - kmer + 1, i + 1);
                 if (px2.containsKey(s)) {
                     p = px2.get(s)[0] + 1;
@@ -331,7 +321,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[i];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
+            if (bx[1] == kmer) {
                 s = seq.substring(i - kmer + 1, i + 1);
                 p = px2.get(s)[0];
                 if (p > nblocks) {
@@ -354,7 +344,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[l + i + 1];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
+            if (bx[1] == kmer) {
                 s = aseq.substring(i - kmer + 1, i + 1);
                 if (px2.containsKey(s)) {
                     p = px2.get(s)[0];
@@ -386,7 +376,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[i];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
+            if (bx[1] == kmer) {
                 s = seq.substring(i - kmer + 1, i + 1);
                 p = px2.get(s)[0];
                 if (p < 0) {
@@ -421,7 +411,7 @@ public final class Tandems {
         for (i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[l + i + 1];
             bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
+            if (bx[1] == kmer) {
                 s = aseq.substring(i - kmer + 1, i + 1);
                 if (px2.containsKey(s)) {
                     p = px2.get(s)[0];
@@ -490,7 +480,7 @@ public final class Tandems {
                                     break;
                                 }
                             }
-                            if (b[x + h] == 4 && b[y + h] == 4) {
+                            if (b[x + h] == 0 && b[y + h] == 0) {
                                 break;
                             }
 
@@ -509,7 +499,7 @@ public final class Tandems {
                             }
                             h++;
                         }
-                        if (h > minlenblock) {
+                        if (h > minkmerseq) {
                             k7[0] = 1;
                             if (k7[k] < h) {
                                 k7[k] = h;
@@ -786,7 +776,172 @@ public final class Tandems {
         return false;
     }
 
-    private void PrintResult(int n) throws IOException {
+    private byte[] Mask(String seq, int kmer) {
+        int l = seq.length();
+        int i = 0;
+        int j = 0;
+        int p = 0;
+
+        String s;
+        String aseq = dna.ComplementDNA(seq);
+        HashMap<String, Integer> px2 = new HashMap<>();
+
+        int[] ax = new int[kmer];
+        int[] bx = new int[5];
+
+        byte b[] = seq.getBytes();
+        byte c[] = aseq.getBytes();
+        for (i = 0; i < l; i++) {
+            b[i] = tables.dx2[b[i]];
+            c[i] = tables.dx2[c[i]];
+            if (bx[4] == 0) {
+                numnonn++;
+            }
+        }
+
+        for (i = 0; i < kmer - 1; i++) {
+            ax[i] = b[i];
+            bx[ax[i]]++;
+        }
+        for (i = kmer - 1; i < l; i++) {
+            ax[kmer - 1] = b[i];
+            bx[ax[kmer - 1]]++;
+            if (bx[4] == 0) {
+                s = seq.substring(i - kmer + 1, i + 1);
+                if (px2.containsKey(s)) {
+                    p = px2.get(s) + 1;
+                    px2.replace(s, p);
+                } else {
+                    px2.put(s, 1);
+                }
+            }
+            bx[b[i + 1 - kmer]]--;
+            for (j = 0; j < kmer - 1; j++) {
+                ax[j] = ax[j + 1];
+            }
+        }
+        //reverse
+        bx = new int[5];
+        for (i = 0; i < kmer - 1; i++) {
+            ax[i] = c[i];
+            bx[ax[i]]++;
+        }
+        for (i = kmer - 1; i < l; i++) {
+            ax[kmer - 1] = c[i];
+            bx[ax[kmer - 1]]++;
+            if (bx[4] == 0) {
+                s = aseq.substring(i - kmer + 1, i + 1);
+                if (px2.containsKey(s)) {
+                    p = px2.get(s) + 1;
+                    px2.replace(s, p);
+                }
+            }
+            bx[c[i + 1 - kmer]]--;
+            for (j = 0; j < kmer - 1; j++) {
+                ax[j] = ax[j + 1];
+            }
+        }
+
+        byte[] u = new byte[l];
+        bx = new int[5];
+        for (i = 0; i < kmer - 1; i++) {
+            ax[i] = b[i];
+            bx[ax[i]]++;
+        }
+        for (i = kmer - 1; i < l; i++) {
+            ax[kmer - 1] = b[i];
+            bx[ax[kmer - 1]]++;
+            int x = i - kmer + 1;
+            if (bx[4] == 0) {
+                s = seq.substring(x, i + 1);
+                p = px2.get(s);
+                if (p > 1) {
+                    for (j = x; j < x + kmer; j++) {
+                        u[j] = 1;
+                    }
+                }
+            }
+            bx[b[i + 1 - kmer]]--;
+            for (j = 0; j < kmer - 1; j++) {
+                ax[j] = ax[j + 1];
+            }
+        }
+        //reverse
+        bx = new int[5];
+        for (i = 0; i < kmer - 1; i++) {
+            ax[i] = c[i];
+            bx[ax[i]]++;
+        }
+        for (i = kmer - 1; i < l; i++) {
+            ax[kmer - 1] = c[i];
+            if (bx[4] == 0) {
+                int x = i - kmer + 1;
+                s = aseq.substring(x, i + 1);
+                if (px2.containsKey(s)) {
+                    p = px2.get(s);
+                    if (p > 1) {
+                        for (j = x; j < x + kmer; j++) {
+                            u[j] = 1;
+                        }
+                    }
+                }
+            }
+            bx[c[i + 1 - kmer]]--;
+            for (j = 0; j < kmer - 1; j++) {
+                ax[j] = ax[j + 1];
+            }
+        }
+        return u;
+    }
+
+    private byte[] MaskingFilter(byte u[], int mlenseq) {
+        byte[] b = new byte[u.length];
+        ArrayList<Integer> z = new ArrayList<>();
+        int j = 0;
+        for (int i = 0; i < u.length; i++) {
+            if (u[i] > 0) {
+                int x1 = i;
+                int x2 = i;
+                for (j = i + 1; j < u.length; j++) {
+                    if (u[j] > 0) {
+                        x2 = j;
+                    } else {
+                        break;
+                    }
+                }
+                i = j - 1;
+                if (x2 > x1) {
+                    if (z.isEmpty()) {
+                        z.add(x1);
+                        z.add(x2);
+                    } else {
+                        int h = z.size() - 1;
+                        int x4 = z.get(h);
+                        if (x4 + mlenseq > x1) {
+                            z.set(h, x2);
+                        } else {
+                            z.add(x1);
+                            z.add(x2);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < z.size(); i += 2) {
+            int x1 = z.get(i);
+            int x2 = z.get(i + 1);
+            if (x2 - x1 > mlenseq) {
+                for (j = x1; j <= x2; j++) {
+                    b[j] = 1;
+                }
+            }
+        }
+
+        return b;
+    }
+
+    private void PrintResult(int n, byte[] m) throws IOException {
         if (bb == null) {
             return;
         }
@@ -804,22 +959,9 @@ public final class Tandems {
         }
 
         if (MaskedShow) {
-            byte[] m = new byte[l];
-
             try (FileWriter fileWriter = new FileWriter(maskedfile)) {
                 fileWriter.write(">" + sname[n]);
                 System.out.println("Saving masked file: " + maskedfile);
-                for (int i = 0; i < bb.size(); i++) {
-                    int[] z7 = bb.get(i);
-                    if (z7[0] > 1) {
-                        for (int j = 1; j < z7[0]; j += 2) {
-                            int x = z7[j] + Math.abs(z7[j + 1]) - 1;
-                            for (int h = z7[j]; h < x; h++) {
-                                m[h] = 4;
-                            }
-                        }
-                    }
-                }
                 char[] c = seq[n].toCharArray();
                 for (int i = 0; i < l; i++) {
                     if (m[i] == 0) {
@@ -835,7 +977,7 @@ public final class Tandems {
         }
 
         StringBuilder sr = new StringBuilder();
-        sr.append("kmer=").append(kmerln).append("\n").append("Initial string length filter=").append(minlenblock).append("\n").append("String length filter=").append(minlenseq).append("\n").append("Quick analysis is ").append(QuickReports).append("\n");
+        sr.append("kmer=").append(kmerln).append("\n").append("Initial repeat length filter=").append(minlenseq).append("\n").append("Quick analysis is ").append(QuickReports).append("\n");
         sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
         sr.append("Time taken: ").append(duration).append(" seconds\n\n");
         if (SeqShow) {
@@ -860,51 +1002,50 @@ public final class Tandems {
                 if (z7[0] > 1) {
                     k++;
                     for (int j = 1; j < z7[0]; j += 2) {
-                        if (Math.abs(z7[j + 1]) > minlenseq) {
 
-                            String s0 = "";
-                            int x = z7[j] + Math.abs(z7[j + 1]) - 1;
+                        String s0 = "";
+                        int x = z7[j] + Math.abs(z7[j + 1]) - 1;
 
-                            if (SeqShow) {
-                                if (x > seq[n].length()) {
-                                    s0 = seq[n].substring(z7[j]);
-                                } else {
-                                    s0 = seq[n].substring(z7[j], x);
-                                }
-                                if (flanks > 0) {
-                                    String s1 = "";
-                                    String s2 = "";
-                                    if (z7[j] - flanks > 0) {
-                                        s1 = seq[n].substring(z7[j] - flanks, z7[j]).toUpperCase();
-                                    } else {
-                                        if (z7[j] > 1) {
-                                            s1 = seq[n].substring(1, z7[1] - 1).toUpperCase();
-                                        }
-                                    }
-                                    if (x + flanks < l) {
-                                        s2 = seq[n].substring(x, x + flanks).toUpperCase();
-                                    } else {
-                                        if (l - x > 0) {
-                                            s2 = seq[n].substring(x, l).toUpperCase();
-                                        }
-                                    }
-                                    s0 = s1 + s0 + s2;
-                                }
-                                if (z7[j + 1] < 0) {
-                                    s0 = dna.ComplementDNA2(s0);
-                                }
-                            }
-                            sr = new StringBuilder();
-                            if (z7[j + 1] > 0) {
-                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append("+").append("\t").append(s0).append("\n");
-//                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
-                                fileWriter.write(sr.toString());
+                        if (SeqShow) {
+                            if (x > seq[n].length()) {
+                                s0 = seq[n].substring(z7[j]);
                             } else {
-                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
-//                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
-                                fileWriter.write(sr.toString());
+                                s0 = seq[n].substring(z7[j], x);
+                            }
+                            if (flanks > 0) {
+                                String s1 = "";
+                                String s2 = "";
+                                if (z7[j] - flanks > 0) {
+                                    s1 = seq[n].substring(z7[j] - flanks, z7[j]).toUpperCase();
+                                } else {
+                                    if (z7[j] > 1) {
+                                        s1 = seq[n].substring(1, z7[1] - 1).toUpperCase();
+                                    }
+                                }
+                                if (x + flanks < l) {
+                                    s2 = seq[n].substring(x, x + flanks).toUpperCase();
+                                } else {
+                                    if (l - x > 0) {
+                                        s2 = seq[n].substring(x, l).toUpperCase();
+                                    }
+                                }
+                                s0 = s1 + s0 + s2;
+                            }
+                            if (z7[j + 1] < 0) {
+                                s0 = dna.ComplementDNA2(s0);
                             }
                         }
+                        sr = new StringBuilder();
+                        if (z7[j + 1] > 0) {
+                            sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append("+").append("\t").append(s0).append("\n");
+//                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
+                            fileWriter.write(sr.toString());
+                        } else {
+                            sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
+//                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
+                            fileWriter.write(sr.toString());
+                        }
+
                     }
                 }
             }
@@ -928,7 +1069,7 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         if (bb == null) {
             return;
         }
-        int k = 100;
+        int z = 5;        // step between clusters
         int b = bb.size();
         int l = seq[n].length();
         int width = l < 5_000_000 ? l / 100 : 5_000 + (l - 5_000) / 200; // image=10000x3000
@@ -941,23 +1082,32 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         if (width < 500) {
             width = 500;
         }
-        int height = b < 5000 ? k + b : 5100 + (b - 5000) / 200;        //too big a picture leads to an error
+        int height = b * z;      //too big a picture leads to an error
         if (dh > 0) {
             height = dh;
         }
         if (height > 46340) {
             height = 46340;
         }
-        if (height < 500) {
-            height = 500;
+        if (height < 100) {
+            height = 100;
         }
-        float dotSize = 1 + (b / 500);                                  //7.0f;
+        height = height + 50;
+        z = height / (b + 2);
+
+        float dotSize = 10 - (b / 100);
+        if (dotSize < 5) {
+            dotSize = 5.0f;
+        }
+        if (dotSize > 7) {
+            dotSize = 7.0f;
+        }
         double w1 = (double) width / l;                                 // nucleotides per pixel        
-        if (dotSize < 1) {
-            dotSize = 1.0f;
+        if (dotSize < 5) {
+            dotSize = 5.0f;
         }
-        if (dotSize > 10) {
-            dotSize = 10.0f;
+        if (dotSize > 7) {
+            dotSize = 7.0f;
         }
 
         String pngfile = filePath + "_" + (n + 1) + ".png";
@@ -967,7 +1117,6 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
 
         BufferedImage image = new BufferedImage(width + 100, height + 100, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = image.createGraphics();
-
         g2d.setStroke(new BasicStroke(dotSize));
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, width + 100, height + 100);
@@ -981,10 +1130,12 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
             g2d.drawString(String.format("%,d", (1 + (int) (i * d))), 55 + i * w, 10);
         }
 
+        int y = 25;
         for (int i = 0; i < b; i++) {
             int[] z7 = bb.get(i);
             if (z7[0] > 1) {
-                int y = (i + 70);// y1-y2 line                
+
+                y = y + i + z;  // y1-y2 line       
                 for (int j = 1; j < z7[0]; j += 2) {
                     if (Math.abs(z7[j + 1]) > minlenseq) {
                         int x1 = 50 + (int) (z7[j] * w1);
@@ -1019,8 +1170,8 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
     private int nblocks = 2;
     private int numnonn = 0;   // calculated non-N bases at the sequence
     private final int ssrlen = 30;
-    private int minlenblock = 50;   // initial sequence length user control  
     private int minlenseq = 50;     // sequence length 
+    private int minkmerseq = 50;     // sequence length 
     private final int mnblock = 20;
     private int kmerln = 12;
     private int flanks = 20;

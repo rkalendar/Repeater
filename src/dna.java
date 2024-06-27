@@ -27,6 +27,8 @@ public final class dna {
         return new StringBuilder(AntisenseDNA(source)).reverse().toString();
     }
 
+ 
+
     public static String ComplementDNA2(String source) {
         byte[] b = source.getBytes();
         int l = source.length();
