@@ -267,7 +267,6 @@ public final class Tandems {
         for (i = 1; i < l + 1; i++) {
             b[l + i] = b[l - i];
         }
-
         for (i = 0; i < kmer - 1; i++) {
             ax[i] = b[i];
             bx[ax[i]]++;
@@ -444,6 +443,16 @@ public final class Tandems {
             return 0;
         }
 
+        b = seq.getBytes();
+        for (i = 0; i < l; i++) {
+            b[i] = tables.dx2[b[i]];
+        }
+        b = ArrayExtendByte(b, l + 1);
+        b[l] = 4;
+        for (i = 1; i < l + 1; i++) {
+            b[l + i] = tables.cdnat2[b[l - i]];
+        }
+
         bb = new ArrayList<>();
         byte[] m = new byte[g];
         int[] k7;
@@ -480,7 +489,7 @@ public final class Tandems {
                                     break;
                                 }
                             }
-                            if (b[x + h] == 0 && b[y + h] == 0) {
+                            if (b[x + h] == 4 && b[y + h] == 4) {
                                 break;
                             }
 
@@ -535,7 +544,6 @@ public final class Tandems {
                                 x = -1;
                             }
                         }
-
                         if (x > -1) {
                             k8[0] = k8[0] + 2;
                             w++;
@@ -576,38 +584,6 @@ public final class Tandems {
             bb.set(i, Sorting(k7));
         }
 
-        if (QuickReports) {
-            p = -1;
-            for (i = 0; i < n; i++) {
-                k7 = bb.get(i);
-                if (k7[0] > 0) {
-                    p++;
-                    bb.set(p, bb.get(i));
-                }
-            }
-            if (p > -1) {
-                bb = new ArrayList<>(bb.subList(0, p + 1));
-            }
-            return p;
-        }
-
-        for (i = 0; i < n - 1; i++) {
-            k7 = bb.get(i);
-            if (k7[0] > 0) {
-                for (j = i + 1; j < n; j++) {
-                    k8 = bb.get(j);
-                    if (k8[0] > 0) {
-                        if (isCluster(k7, k8)) {
-                            k7 = joinTwo(k7, k8);
-
-                            bb.set(i, k7);
-                            bb.set(j, new int[1]);
-                        }
-                    }
-                }
-            }
-        }
-
         p = -1;
         for (i = 0; i < n; i++) {
             k7 = bb.get(i);
@@ -620,6 +596,7 @@ public final class Tandems {
             bb = new ArrayList<>(bb.subList(0, p + 1));
         }
         return p;
+
     }
 
     public int[] Sorting(int[] a) {
