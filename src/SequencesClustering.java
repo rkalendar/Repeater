@@ -1,4 +1,3 @@
-
 import java.util.HashMap;
 
 public final class SequencesClustering {

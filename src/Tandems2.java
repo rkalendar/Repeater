@@ -71,10 +71,7 @@ public final class Tandems2 {
         for (int i = 0; i < nseq; i++) {
             reallen = 0;
             byte[] u = Mask(seq[i], kmerln);
-            if (MaskedShow) {
-                MaskSave(i, u);
-            }
-
+            MaskSave(i, u);
             ClusteringMasking(seq[i], u, kmerln, minlenblock, minlenseq);
             if (GFFShow) {
                 GffSave(i);
@@ -242,21 +239,20 @@ public final class Tandems2 {
                 n += 2;
             }
         }
-        int[] z2 = new int[n];
+        int[] z2 = new int[n];//x1-x2 block
         n = -1;
         for (int i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
-            if (x2 - x1 > minlenseq) {
+            if (x2 - x1 > minlenseq) { // join blocks at short distance
                 z2[++n] = x1;
                 z2[++n] = x2;
             }
         }
 
         SequencesClustering sc = new SequencesClustering(seq, z2, 70, true, kmer);
-        int[] q = sc.Result();
+        int[] q = sc.Result(); // cluster ID for each block
         int ncl = sc.getNcl();
-
         if (q.length < 1) {
             return -1;
         }
@@ -313,10 +309,12 @@ public final class Tandems2 {
                 }
             }
 
-            float z = (repeatslen * 100 / reallen);
-            fileWriter.write("Sequence coverage by repeats = " + String.format("%.2f", z) + "%\n\n");
-            fileWriter.write(new String(c));
+            double z = (repeatslen * 100) / reallen;
             System.out.println("Sequence coverage by repeats = " + String.format("%.2f", z) + "%");
+            if (MaskedShow) {
+                fileWriter.write("Sequence coverage by repeats = " + String.format("%.2f", z) + "%\n\n");
+                fileWriter.write(new String(c));
+            }
         }
     }
 
@@ -344,7 +342,7 @@ public final class Tandems2 {
         }
 
         double d = ((l - reallen) * 100) / l;
-        float z = (repeatslen * 100 / reallen);
+        double z = (repeatslen * 100) / reallen;
         sr.append("Sequence gap (bp)=").append(l - reallen).append(" (").append(String.format("%.3f", d)).append("%)\n");
 
         try (FileWriter fileWriter = new FileWriter(reportfile)) {
@@ -487,7 +485,7 @@ public final class Tandems2 {
 
         for (int i = 0; i < b; i++) {
             int[] z7 = bb.get(i);
-            for (int j = 1; j < z7[0]; j += 2) {
+            for (int j = 1; j < z7.length; j += 2) {
                 int x1 = 50 + (int) (z7[j] * w1);
                 int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
                 g2d.setColor(Color.DARK_GRAY);
@@ -498,7 +496,7 @@ public final class Tandems2 {
         for (int i = 0; i < b; i++) {
             int[] z7 = bb.get(i);
             int y = 40 + (i * z);  // y1-y2 line    
-            for (int j = 1; j < z7[0]; j += 2) {
+            for (int j = 1; j < z7.length; j += 2) {
                 int x1 = 50 + (int) (z7[j] * w1);
                 int x2 = 51 + (int) ((z7[j] + z7[j + 1]) * w1);
                 g2d.setColor(Color.BLUE);
@@ -519,8 +517,8 @@ public final class Tandems2 {
     public int nseq;
     public int iwidth = 0;
     public int iheight = 0;
-    public int reallen = 0;
-    public int repeatslen = 0;
+    public double reallen = 0;
+    public double repeatslen = 0;
     private String[] seq;
     private String[] sname;
     private int minlenblock = 25;   // repeat length user control  
