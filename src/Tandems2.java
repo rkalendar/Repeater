@@ -71,14 +71,13 @@ public final class Tandems2 {
         for (int i = 0; i < nseq; i++) {
             reallen = 0;
             byte[] u = Mask(seq[i], kmerln);
-            float z = 0;
             if (MaskedShow) {
-                z = MaskSave(i, u);
+                MaskSave(i, u);
             }
 
             ClusteringMasking(seq[i], u, kmerln, minlenblock, minlenseq);
             if (GFFShow) {
-                GffSave(i, z);
+                GffSave(i);
             }
             PictureSave(i, iwidth, iheight);
         }
@@ -291,12 +290,12 @@ public final class Tandems2 {
         return destArray;
     }
 
-    private float MaskSave(int n, byte[] m) throws IOException {
+    private void MaskSave(int n, byte[] m) throws IOException {
         if (m == null) {
-            return 0f;
+            return;
         }
         int l = seq[n].length();
-        float z = 0;
+        repeatslen = 0;
 
         String maskedfile = filePath + "_" + (n + 1) + ".msk";
         if (nseq == 1) {
@@ -309,19 +308,19 @@ public final class Tandems2 {
             char[] c = seq[n].toCharArray();
             for (int i = 0; i < l; i++) {
                 if (m[i] > 0) {              // if (m[i] == 0) {
-                    z++;
+                    repeatslen++;
                     c[i] = (char) (c[i] - 32);
                 }
             }
-            z = (z * 100 / reallen);
+
+            float z = (repeatslen * 100 / reallen);
             fileWriter.write("Sequence coverage by repeats = " + String.format("%.2f", z) + "%\n\n");
             fileWriter.write(new String(c));
             System.out.println("Sequence coverage by repeats = " + String.format("%.2f", z) + "%");
         }
-        return z;
     }
 
-    private void GffSave(int n, float z) throws IOException {
+    private void GffSave(int n) throws IOException {
         if (bb == null) {
             return;
         }
@@ -345,6 +344,7 @@ public final class Tandems2 {
         }
 
         double d = ((l - reallen) * 100) / l;
+        float z = (repeatslen * 100 / reallen);
         sr.append("Sequence gap (bp)=").append(l - reallen).append(" (").append(String.format("%.3f", d)).append("%)\n");
 
         try (FileWriter fileWriter = new FileWriter(reportfile)) {
@@ -520,6 +520,7 @@ public final class Tandems2 {
     public int iwidth = 0;
     public int iheight = 0;
     public int reallen = 0;
+    public int repeatslen = 0;
     private String[] seq;
     private String[] sname;
     private int minlenblock = 25;   // repeat length user control  
