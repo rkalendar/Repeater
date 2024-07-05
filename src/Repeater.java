@@ -10,9 +10,9 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 12;
+            int kmer = 21;
             int minlen = 25;
-            int seqlen = 50;
+            int seqlen = 25;
             int width = 0;
             int hight = 0;
             int flanksshow = 0;

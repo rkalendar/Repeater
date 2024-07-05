@@ -1,3 +1,4 @@
+
 import java.awt.BasicStroke;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -87,7 +88,7 @@ public final class Tandems2 {
 
         String s;
         String aseq = dna.ComplementDNA(seq);
-        HashMap<String, Integer> px2 = new HashMap<>();
+        HashMap<String, Integer> map = new HashMap<>();
 
         int[] ax = new int[kmer];
         int[] bx = new int[5];
@@ -111,11 +112,11 @@ public final class Tandems2 {
             bx[ax[kmer - 1]]++;
             if (bx[4] == 0) {
                 s = seq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s) + 1;
-                    px2.replace(s, p);
+                if (map.containsKey(s)) {
+                    p = map.get(s) + 1;
+                    map.replace(s, p);
                 } else {
-                    px2.put(s, 1);
+                    map.put(s, 1);
                 }
             }
             bx[b[i + 1 - kmer]]--;
@@ -134,9 +135,9 @@ public final class Tandems2 {
             bx[ax[kmer - 1]]++;
             if (bx[4] == 0) {
                 s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s) + 1;
-                    px2.replace(s, p);
+                if (map.containsKey(s)) {
+                    p = map.get(s) + 1;
+                    map.replace(s, p);
                 }
             }
             bx[c[i + 1 - kmer]]--;
@@ -157,10 +158,10 @@ public final class Tandems2 {
             int x = i - kmer + 1;
             if (bx[4] == 0) {
                 s = seq.substring(x, i + 1);
-                p = px2.get(s);
+                p = map.get(s);
                 if (p > 1) {
                     for (j = x; j < x + kmer; j++) {
-                        u[j] = 1;
+                        u[j] = 3;
                     }
                 }
             }
@@ -180,8 +181,8 @@ public final class Tandems2 {
             if (bx[4] == 0) {
                 int x = i - kmer + 1;
                 s = aseq.substring(x, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s);
+                if (map.containsKey(s)) {
+                    p = map.get(s);
                     if (p > 1) {
                         for (j = x; j < x + kmer; j++) {
                             u[j] = 2;
@@ -249,7 +250,7 @@ public final class Tandems2 {
             }
         }
 
-        SequencesClustering sc = new SequencesClustering(seq, z2, 70, true, kmer);
+        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, true, kmer);
         int[] q = sc.Result(); // cluster ID for each block
         int ncl = sc.getNcl();
         if (q.length < 1) {
@@ -430,8 +431,8 @@ public final class Tandems2 {
         int b = bb.size();
         int z = 20;          // step between clusters
 
-        if (b > 1000) {
-            b = 1000;
+        if (b > 500) {
+            b = 500;
         }
 
         if (b > 50) {
@@ -539,6 +540,7 @@ public final class Tandems2 {
     public double repeatslen = 0;
     private String[] seq;
     private String[] sname;
+    public int similarity = 70;
     private int minlenblock = 25;   // repeat length user control  
     private int minlenseq = 50;     // sequence length 
     private int kmerln = 21;
