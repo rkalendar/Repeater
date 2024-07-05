@@ -1,4 +1,3 @@
-
 import java.awt.BasicStroke;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -274,10 +273,39 @@ public final class Tandems2 {
             }
             if (h > 0) {
                 k7 = ArrayTrim(k7, k7[0] + 1);
+                for (int i = 2; i < k7.length; i += 2) {
+                    if (k7[0] < k7[i]) {
+                        k7[0] = k7[i];
+                    }
+                }
                 bb.add(k7);
             }
         }
+
+        SortBlocks();
         return bb.size();
+    }
+
+    private void SortBlocks() {
+        if (bb == null) {
+            return;
+        }
+        int n = bb.size();
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = i;
+            int[] zi = bb.get(i);
+            for (int j = i + 1; j < n; j++) {
+                int[] zj = bb.get(j);
+                if (zj[0] > zi[0]) {
+                    minIndex = j;
+                    zi = zj; // Update zi to the new minimum element
+                }
+            }
+            // Swap the elements at i and minIndex
+            int[] temp = bb.get(i);
+            bb.set(i, bb.get(minIndex));
+            bb.set(minIndex, temp);
+        }
     }
 
     public int[] ArrayTrim(int[] srcArray, int n) {
@@ -352,9 +380,8 @@ public final class Tandems2 {
             fileWriter.write(sr.toString());
             for (int i = 0; i < bb.size(); i++) {
                 int[] z7 = bb.get(i);
-
                 k++;
-                for (int j = 1; j < z7[0]; j += 2) {
+                for (int j = 1; j < z7.length; j += 2) {
 
                     String s0 = "";
                     int x = z7[j] + Math.abs(z7[j + 1]) - 1;
@@ -389,18 +416,9 @@ public final class Tandems2 {
                         }
                     }
                     sr = new StringBuilder();
-                    if (z7[j + 1] > 0) {
-                        sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append("+").append("\t").append(s0).append("\n");
-//                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
-                        fileWriter.write(sr.toString());
-                    } else {
-                        sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
-//                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
-                        fileWriter.write(sr.toString());
-                    }
-
+                    sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append(".").append("\t").append(s0).append("\n");
+                    fileWriter.write(sr.toString());
                 }
-
             }
         }
     }
