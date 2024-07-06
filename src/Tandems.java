@@ -87,12 +87,12 @@ public final class Tandems {
     public void Run() throws IOException {
         startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
-            FindAllRepeats(seq[i], kmerln);
+            FindAllRepeats(seq[i], kmerln); 
             PrintResult(i);
             PictureSave(i, iwidth, iheight);
         }
     }
-
+ 
     public void RunSSR() throws IOException {
         for (int i = 0; i < nseq; i++) {
             FindAllSSRs(seq[i], telomers);
@@ -800,7 +800,7 @@ public final class Tandems {
         }
 
         StringBuilder sr = new StringBuilder();
-        sr.append("kmer=").append(kmerln).append("\n").append("Initial string length filter=").append(minlenblock).append("\n").append("String length filter=").append(minlenseq).append("\n").append("Quick analysis is false\n");
+        sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\nQuick analysis is false\n");
         sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
         sr.append("Time taken: ").append(duration).append(" seconds\n\n");
         if (SeqShow) {

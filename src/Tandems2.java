@@ -283,7 +283,8 @@ public final class Tandems2 {
             }
         }
 
-        SortBlocks();
+        //SortBlocks();
+        ShellSort();
         return bb.size();
     }
 
@@ -306,6 +307,23 @@ public final class Tandems2 {
             int[] temp = bb.get(i);
             bb.set(i, bb.get(minIndex));
             bb.set(minIndex, temp);
+        }
+    }
+
+    public void ShellSort() {
+        if (bb == null) {
+            return;
+        }
+        int n = bb.size();
+        for (int gap = n / 2; gap > 0; gap /= 2) {
+            for (int i = gap; i < n; i++) {
+                int[] temp = bb.get(i);
+                int j;
+                for (j = i; j >= gap && bb.get(j - gap)[0] < temp[0]; j -= gap) {
+                    bb.set(j, bb.get(j - gap));
+                }
+                bb.set(j, temp);
+            }
         }
     }
 
@@ -361,7 +379,7 @@ public final class Tandems2 {
         }
 
         StringBuilder sr = new StringBuilder();
-        sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("\n");
+        sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\n\n");
         sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
         sr.append("Time taken: ").append(duration).append(" seconds\n\n");
         if (SeqShow) {
@@ -514,10 +532,10 @@ public final class Tandems2 {
 
         for (int i = 0; i < b; i++) {
             int[] z7 = bb.get(i);
-            int y = 40 + (i * z);  // y1-y2 line    
+            int y = 50 + (i * z);  // y1-y2 line    
             for (int j = 1; j < z7.length; j += 2) {
                 int x1 = 50 + (int) (z7[j] * w1);
-                int x2 = 51 + (int) ((z7[j] + z7[j + 1]) * w1);
+                int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
                 g2d.setColor(Color.BLUE);
                 g2d.drawLine(x1, y, x2, y); //(int x1, int y1, int x2, int y2)
             }

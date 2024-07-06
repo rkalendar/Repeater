@@ -12,7 +12,7 @@ public class Repeater {
             String s = String.join(" ", args).toLowerCase() + " ";
             int kmer = 21;
             int minlen = 25;
-            int seqlen = 25;
+            int seqlen = 50;
             int width = 0;
             int hight = 0;
             int flanksshow = 0;
