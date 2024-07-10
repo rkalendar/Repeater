@@ -33,7 +33,7 @@ To run the project from the command line, go to the target folder and type the f
 ```
 java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=21 min=25 image=5000x3000
 
-java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt mask=false gff=false
 
 java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=21 min=100 sln=250 image=5000x3000 quick=false mask=false seqshow=true
 
@@ -42,7 +42,7 @@ java -jar <Repeater2Path>\dist\Repeater2.jar \test\2.txt ssr=true seqshow=true f
 
 ### Large genome usage:
 ```
-java -jar -Xms16g -Xmx64g \dist\Repeater2.jar input_Folder_path kmer=21 image=10000x5000
+java -jar -Xms16g -Xmx64g \dist\Repeater2.jar input_Folder_path kmer=21 min=30 sln=100 mask=false gff=false 
 ```
 
 Analysing all files in the folder:
