@@ -178,7 +178,7 @@ public class Repeater {
         return (Integer.parseInt(r.toString()));
     }
 
-    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean maskshow, boolean gffshow, boolean seqshow, boolean ssrrun, int width, int hight) {
+    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean gffshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight) {
         try {
             long startTime = System.nanoTime();
             byte[] binaryArray = Files.readAllBytes(Paths.get(infile));
@@ -217,6 +217,7 @@ public class Repeater {
                 s2.SetTandemLen(minlen);
                 s2.SetSequenceLen(seqlen);
                 s2.SetMasked(maskshow);
+                s2.SetGFF(gffshow);
                 s2.SetShowSeq(seqshow);
                 s2.SetFlanks(flanksshow);
                 s2.SetFileName(infile);

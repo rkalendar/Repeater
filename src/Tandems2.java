@@ -339,26 +339,24 @@ public final class Tandems2 {
         }
         int l = seq[n].length();
         repeatslen = 0;
-
-        String maskedfile = filePath + "_" + (n + 1) + ".msk";
-        if (nseq == 1) {
-            maskedfile = filePath + ".msk";
-        }
-
-        try (FileWriter fileWriter = new FileWriter(maskedfile)) {
-            fileWriter.write(">" + sname[n]);
-            System.out.println("Saving masked file: " + maskedfile);
-            char[] c = seq[n].toCharArray();
-            for (int i = 0; i < l; i++) {
-                if (m[i] > 0) {              // if (m[i] == 0) {
-                    repeatslen++;
-                    c[i] = (char) (c[i] - 32);
-                }
+        char[] c = seq[n].toCharArray();
+        for (int i = 0; i < l; i++) {
+            if (m[i] > 0) {              // if (m[i] == 0) {
+                repeatslen++;
+                c[i] = (char) (c[i] - 32);
             }
+        }
+        double z = (repeatslen * 100) / reallen;
+        System.out.println("Sequence coverage by repeats = " + String.format("%.2f", z) + "%");
 
-            double z = (repeatslen * 100) / reallen;
-            System.out.println("Sequence coverage by repeats = " + String.format("%.2f", z) + "%");
-            if (MaskedShow) {
+        if (MaskedShow) {
+            String maskedfile = filePath + "_" + (n + 1) + ".msk";
+            if (nseq == 1) {
+                maskedfile = filePath + ".msk";
+            }
+            try (FileWriter fileWriter = new FileWriter(maskedfile)) {
+                System.out.println("Saving masked file: " + maskedfile);
+                fileWriter.write(">" + sname[n]);
                 fileWriter.write("Sequence coverage by repeats = " + String.format("%.2f", z) + "%\n\n");
                 fileWriter.write(new String(c));
             }
@@ -449,8 +447,8 @@ public final class Tandems2 {
         int b = bb.size();
         int z = 20;          // step between clusters
 
-        if (b > 500) {
-            b = 500;
+        if (b > 300) {
+            b = 300;
         }
 
         if (b > 50) {
@@ -461,9 +459,6 @@ public final class Tandems2 {
         }
         if (b > 250) {
             z = 8;
-        }
-        if (b > 500) {
-            z = 7;
         }
 
         int l = seq[n].length();

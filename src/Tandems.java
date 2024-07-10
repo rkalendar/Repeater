@@ -84,15 +84,19 @@ public final class Tandems {
         MaskedShow = i;
     }
 
+    public void SetGFF(boolean i) {
+        GFFShow = i;
+    }
+
     public void Run() throws IOException {
         startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
-            FindAllRepeats(seq[i], kmerln); 
+            FindAllRepeats(seq[i], kmerln);
             PrintResult(i);
             PictureSave(i, iwidth, iheight);
         }
     }
- 
+
     public void RunSSR() throws IOException {
         for (int i = 0; i < nseq; i++) {
             FindAllSSRs(seq[i], telomers);
@@ -798,76 +802,78 @@ public final class Tandems {
                 System.out.println("Sequence coverage by repeats " + String.format("%.2f", z) + "%");
             }
         }
-
-        StringBuilder sr = new StringBuilder();
-        sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\nQuick analysis is false\n");
-        sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
-        sr.append("Time taken: ").append(duration).append(" seconds\n\n");
-        if (SeqShow) {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        } else {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        }
-        if (v < l) {
-            double d = ((l - v) * 100) / l;
-            sr.append("Sequence gap (bp)=").append(l - v).append(" (").append(String.format("%.3f", d)).append("%)\n");
-        }
-
-        try (FileWriter fileWriter = new FileWriter(reportfile)) {
-
-            System.out.println("Saving report file: " + reportfile);
-            if (MaskedShow) {
-                fileWriter.write("Sequence coverage by repeats " + String.format("%.2f", z) + "%\n\n");
+        
+        if (GFFShow) {
+            StringBuilder sr = new StringBuilder();
+            sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\nQuick analysis is false\n");
+            sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
+            sr.append("Time taken: ").append(duration).append(" seconds\n\n");
+            if (SeqShow) {
+                sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
+            } else {
+                sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
             }
-            fileWriter.write(sr.toString());
-            for (int i = 0; i < bb.size(); i++) {
-                int[] z7 = bb.get(i);
-                if (z7[0] > 1) {
-                    k++;
-                    for (int j = 1; j < z7[0]; j += 2) {
-                        if (Math.abs(z7[j + 1]) > minlenseq) {
+            if (v < l) {
+                double d = ((l - v) * 100) / l;
+                sr.append("Sequence gap (bp)=").append(l - v).append(" (").append(String.format("%.3f", d)).append("%)\n");
+            }
 
-                            String s0 = "";
-                            int x = z7[j] + Math.abs(z7[j + 1]) - 1;
+            try (FileWriter fileWriter = new FileWriter(reportfile)) {
 
-                            if (SeqShow) {
-                                if (x > seq[n].length()) {
-                                    s0 = seq[n].substring(z7[j]);
-                                } else {
-                                    s0 = seq[n].substring(z7[j], x);
-                                }
-                                if (flanks > 0) {
-                                    String s1 = "";
-                                    String s2 = "";
-                                    if (z7[j] - flanks > 0) {
-                                        s1 = seq[n].substring(z7[j] - flanks, z7[j]).toUpperCase();
+                System.out.println("Saving report file: " + reportfile);
+                if (MaskedShow) {
+                    fileWriter.write("Sequence coverage by repeats " + String.format("%.2f", z) + "%\n\n");
+                }
+                fileWriter.write(sr.toString());
+                for (int i = 0; i < bb.size(); i++) {
+                    int[] z7 = bb.get(i);
+                    if (z7[0] > 1) {
+                        k++;
+                        for (int j = 1; j < z7[0]; j += 2) {
+                            if (Math.abs(z7[j + 1]) > minlenseq) {
+
+                                String s0 = "";
+                                int x = z7[j] + Math.abs(z7[j + 1]) - 1;
+
+                                if (SeqShow) {
+                                    if (x > seq[n].length()) {
+                                        s0 = seq[n].substring(z7[j]);
                                     } else {
-                                        if (z7[j] > 1) {
-                                            s1 = seq[n].substring(1, z7[1] - 1).toUpperCase();
-                                        }
+                                        s0 = seq[n].substring(z7[j], x);
                                     }
-                                    if (x + flanks < l) {
-                                        s2 = seq[n].substring(x, x + flanks).toUpperCase();
-                                    } else {
-                                        if (l - x > 0) {
-                                            s2 = seq[n].substring(x, l).toUpperCase();
+                                    if (flanks > 0) {
+                                        String s1 = "";
+                                        String s2 = "";
+                                        if (z7[j] - flanks > 0) {
+                                            s1 = seq[n].substring(z7[j] - flanks, z7[j]).toUpperCase();
+                                        } else {
+                                            if (z7[j] > 1) {
+                                                s1 = seq[n].substring(1, z7[1] - 1).toUpperCase();
+                                            }
                                         }
+                                        if (x + flanks < l) {
+                                            s2 = seq[n].substring(x, x + flanks).toUpperCase();
+                                        } else {
+                                            if (l - x > 0) {
+                                                s2 = seq[n].substring(x, l).toUpperCase();
+                                            }
+                                        }
+                                        s0 = s1 + s0 + s2;
                                     }
-                                    s0 = s1 + s0 + s2;
+                                    if (z7[j + 1] < 0) {
+                                        s0 = dna.ComplementDNA2(s0);
+                                    }
                                 }
-                                if (z7[j + 1] < 0) {
-                                    s0 = dna.ComplementDNA2(s0);
-                                }
-                            }
-                            sr = new StringBuilder();
-                            if (z7[j + 1] > 0) {
-                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append("+").append("\t").append(s0).append("\n");
+                                sr = new StringBuilder();
+                                if (z7[j + 1] > 0) {
+                                    sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append("+").append("\t").append(s0).append("\n");
 //                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
-                                fileWriter.write(sr.toString());
-                            } else {
-                                sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
+                                    fileWriter.write(sr.toString());
+                                } else {
+                                    sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(-z7[j + 1]).append("\t").append(x + 1).append("\t").append(z7[j] - 1).append("\t").append(".").append("\t").append("-").append("\t").append(s0).append("\n");
 //                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
-                                fileWriter.write(sr.toString());
+                                    fileWriter.write(sr.toString());
+                                }
                             }
                         }
                     }
@@ -992,6 +998,7 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
     private int telomers = 11; // Kmax=11 ->SSR  Kmax=14 -> telomers
     private boolean SeqShow;
     private boolean MaskedShow;
+    private boolean GFFShow;
     private ArrayList<int[]> bb;
     private long startTime;
 }
