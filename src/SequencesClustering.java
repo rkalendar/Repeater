@@ -1,3 +1,4 @@
+
 import java.util.HashMap;
 
 public final class SequencesClustering {
@@ -28,23 +29,16 @@ public final class SequencesClustering {
 
     private int Clustering(int kmer) {
         int n = 0;
-        int p = 0;
-        String r;
-        String s;
-        String a;
-
         int[] lx = new int[nseq];
         HashMap<String, int[]> map = new HashMap<>();
         HashMap<String, int[]> m = new HashMap<>();
 
         for (int j = 0; j < nseq; j++) {
-            p = j * 2;
-            r = seq.substring(x1[p], x1[p + 1]);
-            a = dna.ComplementDNA(r);
-            lx[j] = r.length();
-
-            for (int i = kmer - 1; i < lx[j]; i++) {
-                s = r.substring(i - kmer + 1, i + 1);
+            int p = j * 2;
+            //     String a = dna.ComplementDNA(seq.substring(x1[p], x1[p + 1]));
+            lx[j] = x1[p + 1] - x1[p];
+            for (int i = 0; i < lx[j] - kmer + 1; i++) {
+                String s = seq.substring(x1[p] + i, x1[p] + i + kmer);
                 if (m.containsKey(s)) {
                     int[] t = m.get(s);
                     if (t[1] < (j + 1)) {
@@ -59,7 +53,7 @@ public final class SequencesClustering {
                     m.put(s, t);
                 }
 
-                s = a.substring(i - kmer + 1, i + 1);
+                s = dna.ComplementDNA(s);//s = a.substring(i, i + kmer);
                 if (m.containsKey(s)) {
                     int[] t = m.get(s);
                     if (t[1] < (j + 1)) {
@@ -78,11 +72,10 @@ public final class SequencesClustering {
         }
 
         for (int j = 0; j < nseq; j++) {
-            p = j * 2;
-            r = seq.substring(x1[p], x1[p + 1]);
-            a = dna.ComplementDNA(r);
-            for (int i = kmer - 1; i < lx[j]; i++) {
-                s = r.substring(i - kmer + 1, i + 1);
+            int p = j * 2;
+            //   String a = dna.ComplementDNA(seq.substring(x1[p], x1[p + 1]));
+            for (int i = 0; i < lx[j] - kmer + 1; i++) {
+                String s = seq.substring(x1[p] + i, x1[p] + i + kmer);
                 if (map.containsKey(s)) {
                     int[] y = map.get(s);
                     if (y[0] == j) {
@@ -103,7 +96,8 @@ public final class SequencesClustering {
                     map.put(s, y);
                 }
 
-                s = a.substring(i - kmer + 1, i + 1);
+                // s = a.substring(i, i + kmer); // memory problem - Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+                s = dna.ComplementDNA(s);//s = a.substring(i, i + kmer);
                 if (map.containsKey(s)) {
                     int[] y = map.get(s);
                     if (y[0] == j) {
@@ -130,13 +124,11 @@ public final class SequencesClustering {
         //clustering
         cx = new int[nseq];      // clusters        
         for (int j = 0; j < nseq; j++) {
-            p = j * 2;
-            r = seq.substring(x1[p], x1[p + 1]);
-            a = dna.ComplementDNA(r);
+            int p = j * 2;
+            //    String a = dna.ComplementDNA(seq.substring(x1[p], x1[p + 1]));
             int[] x = new int[nseq];
-
-            for (int i = kmer - 1; i < lx[j]; i++) {
-                s = r.substring(i - kmer + 1, i + 1);
+            for (int i = 0; i < lx[j] - kmer + 1; i++) {
+                String s = seq.substring(x1[p] + i, x1[p] + i + kmer);
                 int[] t = map.get(s);
                 for (int h = 2; h < t.length; h = h + 2) {
                     if (t[h] == j) {
@@ -146,7 +138,8 @@ public final class SequencesClustering {
                     }
                 }
 
-                s = a.substring(i - kmer + 1, i + 1);
+                // s = a.substring(i, i + kmer);
+                s = dna.ComplementDNA(s);
                 t = map.get(s);
                 for (int h = 2; h < t.length; h = h + 2) {
                     if (t[h] == j) {
