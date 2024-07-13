@@ -56,6 +56,7 @@ public class Repeater {
                     flanksshow = 1000;
                 }
             }
+
             if (s.contains("kmer=")) {
                 int j = s.indexOf("kmer=");
                 int x = s.indexOf(" ", j);
@@ -66,6 +67,27 @@ public class Repeater {
                     kmer = 5;
                 }
             }
+            if (s.contains("min=")) {
+                int j = s.indexOf("min=");
+                int x = s.indexOf(" ", j);
+                if (x > j) {
+                    minlen = StrToInt(s.substring(j + 4, x));
+                }
+                if (minlen < kmer) {
+                    minlen = kmer;
+                }
+            }
+            if (s.contains("sln=")) {
+                int j = s.indexOf("sln=");
+                int x = s.indexOf(" ", j);
+                if (x > j) {
+                    seqlen = StrToInt(s.substring(j + 4, x));
+                }
+                if (seqlen < minlen) {
+                    seqlen = minlen;
+                }
+            }
+
             if (s.contains("image=")) { // image=10000x3000
                 int j = s.indexOf("image=");
                 int x = s.indexOf(" ", j);
@@ -85,28 +107,6 @@ public class Repeater {
                             hight = 0;
                         }
                     }
-                }
-            }
-
-            if (s.contains("min=")) {
-                int j = s.indexOf("min=");
-                int x = s.indexOf(" ", j);
-                if (x > j) {
-                    minlen = StrToInt(s.substring(j + 4, x));
-                }
-                if (minlen < kmer) {
-                    minlen = kmer;
-                }
-            }
-
-            if (s.contains("sln=")) {
-                int j = s.indexOf("sln=");
-                int x = s.indexOf(" ", j);
-                if (x > j) {
-                    seqlen = StrToInt(s.substring(j + 4, x));
-                }
-                if (seqlen < minlen) {
-                    seqlen = minlen;
                 }
             }
 
@@ -191,6 +191,18 @@ public class Repeater {
                 return;
             }
             System.out.println("Running...");
+            System.out.println("kmer=" + kmer);
+            System.out.println("Minimal repeat length =" + minlen);
+            System.out.println("Repeat block length =" + seqlen);
+            System.out.println("Target file: " + infile);
+            if (rf.getNseq() > 1) {
+                System.out.println("Target FASTA sequences = " + rf.getNseq());
+            }
+            System.out.println("Target sequence length = " + rf.getLength() + " nt");
+            System.out.println("Shown repeated sequence is " + seqshow);
+            if (flanksshow > 0) {
+                System.out.println("Flanks around sequence is " + flanksshow);
+            }
 
             if (quickshow) {
                 Tandems2 s2 = new Tandems2();
@@ -204,10 +216,6 @@ public class Repeater {
                 if (width > 0 && hight > 0) {
                     s2.SetImage(width, hight);
                 }
-                System.out.println("kmer=" + kmer);
-                System.out.println("Minimal repeat length =" + minlen);
-                System.out.println("String length =" + seqlen);
-                System.out.println("Quick analysis is true.");
                 s2.Run();
             } else {
                 Tandems s2 = new Tandems();
@@ -222,23 +230,12 @@ public class Repeater {
                     s2.SetImage(width, hight);
                 }
                 if (ssrrun) {
-                    System.out.println("SSR analysis is " + ssrrun);
+                    System.out.println("SSR analysis is running.");
                     s2.SetTelomers(true);
                     s2.RunSSR();
                 } else {
-                    System.out.println("kmer=" + kmer);
-                    System.out.println("Initial string length =" + minlen);
-                    System.out.println("String length =" + seqlen);
-                    System.out.println("Quick analysis is false.");
                     s2.Run();
                 }
-            }
-
-            System.out.println("Target file: " + infile);
-            System.out.println("Target sequence length = " + rf.getLength() + " nt");
-            System.out.println("Shown repeated sequence is " + seqshow);
-            if (flanksshow > 0) {
-                System.out.println("Flanks around sequence is " + flanksshow);
             }
             long duration = (System.nanoTime() - startTime) / 1000000000;
             System.out.println("Time taken: " + duration + " seconds");

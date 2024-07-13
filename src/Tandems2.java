@@ -1,3 +1,4 @@
+
 import java.awt.BasicStroke;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -350,26 +351,27 @@ public final class Tandems2 {
         int k = 0;
         int l = seq[n].length();
         long duration = (System.nanoTime() - startTime) / 1000000000;
+        System.out.println("Time taken: " + duration + " seconds\n");
 
         String reportfile = filePath + "_" + (n + 1) + ".gff";
         if (nseq == 1) {
             reportfile = filePath + ".gff";
         }
 
-        StringBuilder sr = new StringBuilder();
-        sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\n\n");
-        sr.append("Sequence coverage by repeats = ").append(String.format("%.2f", repeatslen)).append("%\n");
-        sr.append("Sequence gap (bp)=").append(l - reallen).append(" (").append(String.format("%.3f", gaps)).append("%)\n");
-        sr.append("Time taken: ").append(duration).append(" seconds\n\n");
-        sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
-        if (SeqShow) {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        } else {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        }
-
         try (FileWriter fileWriter = new FileWriter(reportfile); BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
             System.out.println("Saving report file: " + reportfile);
+            StringBuilder sr = new StringBuilder();
+            sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\n\n");
+            sr.append("Sequence coverage by repeats = ").append(String.format("%.2f", repeatslen)).append("%\n");
+            sr.append("Sequence gap (bp)=").append(l - reallen).append(" (").append(String.format("%.3f", gaps)).append("%)\n");
+            sr.append("Time taken: ").append(duration).append(" seconds\n\n");
+            sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
+            if (SeqShow) {
+                sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
+            } else {
+                sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase").append("\n");
+            }
+
             bufferedWriter.write(sr.toString());
             for (int i = 0; i < bb.size(); i++) {
                 int[] z7 = bb.get(i);
@@ -463,51 +465,51 @@ public final class Tandems2 {
             dotSize = 7.0f;
         }
 
-        double w1 = (double) width / l;       // nucleotides per pixel        
-        String pngfile = filePath + "_" + (n + 1) + ".png";
-        if (nseq == 1) {
-            pngfile = filePath + ".png";
-        }
-
-        BufferedImage image = new BufferedImage(width + 100, height + 100, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-
-        g2d.setStroke(new BasicStroke(dotSize));
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, width + 100, height + 100);
-        g2d.setColor(Color.BLACK);
-        g2d.drawLine(50, 15, width + 50, 15);
-
-        int w = (width + 100) / 10;
-        int d = l / 10;
-        for (int i = 0; i < 12; i++) {
-            g2d.drawLine(i * w + 50, 5, i * w + 50, 15);
-            g2d.drawString(String.format("%,d", (1 + (int) (i * d))), 55 + i * w, 10);
-        }
-
-        for (int i = 0; i < b; i++) {
-            int[] z7 = bb.get(i);
-            for (int j = 1; j < z7.length; j += 2) {
-                int x1 = 50 + (int) (z7[j] * w1);
-                int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
-                g2d.setColor(Color.DARK_GRAY);
-                g2d.drawLine(x1, 22, x2, 22); //(int x1, int y1, int x2, int y2)
-            }
-        }
-
-        for (int i = 0; i < b; i++) {
-            int[] z7 = bb.get(i);
-            int y = 50 + (i * z);  // y1-y2 line    
-            for (int j = 1; j < z7.length; j += 2) {
-                int x1 = 50 + (int) (z7[j] * w1);
-                int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
-                g2d.setColor(Color.BLUE);
-                g2d.drawLine(x1, y, x2, y); //(int x1, int y1, int x2, int y2)
-            }
-        }
-        g2d.dispose();
         try {
-            System.out.println("Saving picture : " + pngfile);
+            double w1 = (double) width / l;       // nucleotides per pixel        
+            String pngfile = filePath + "_" + (n + 1) + ".png";
+            if (nseq == 1) {
+                pngfile = filePath + ".png";
+            }
+
+            System.out.println("Saving picture " + (width + 100) + "x" + (height + 100) + " : " + pngfile);
+            BufferedImage image = new BufferedImage(width + 100, height + 100, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = image.createGraphics();
+
+            g2d.setStroke(new BasicStroke(dotSize));
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, width + 100, height + 100);
+            g2d.setColor(Color.BLACK);
+            g2d.drawLine(50, 15, width + 50, 15);
+
+            int w = (width + 100) / 10;
+            int d = l / 10;
+            for (int i = 0; i < 12; i++) {
+                g2d.drawLine(i * w + 50, 5, i * w + 50, 15);
+                g2d.drawString(String.format("%,d", (1 + (int) (i * d))), 55 + i * w, 10);
+            }
+
+            for (int i = 0; i < b; i++) {
+                int[] z7 = bb.get(i);
+                for (int j = 1; j < z7.length; j += 2) {
+                    int x1 = 50 + (int) (z7[j] * w1);
+                    int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
+                    g2d.setColor(Color.DARK_GRAY);
+                    g2d.drawLine(x1, 22, x2, 22); //(int x1, int y1, int x2, int y2)
+                }
+            }
+
+            for (int i = 0; i < b; i++) {
+                int[] z7 = bb.get(i);
+                int y = 50 + (i * z);  // y1-y2 line    
+                for (int j = 1; j < z7.length; j += 2) {
+                    int x1 = 50 + (int) (z7[j] * w1);
+                    int x2 = 50 + (int) ((z7[j] + z7[j + 1]) * w1);
+                    g2d.setColor(Color.BLUE);
+                    g2d.drawLine(x1, y, x2, y); //(int x1, int y1, int x2, int y2)
+                }
+            }
+            g2d.dispose();
             File outputFile = new File(pngfile);
             ImageIO.write(image, "png", outputFile);
         } catch (IOException e) {
