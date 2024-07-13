@@ -11,7 +11,7 @@ public class Repeater {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
             int kmer = 21;
-            int minlen = 25;
+            int minlen = 30;
             int seqlen = 50;
             int width = 0;
             int hight = 0;

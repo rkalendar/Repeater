@@ -1,6 +1,6 @@
-
 import java.awt.BasicStroke;
 import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,18 +65,38 @@ public final class Tandems2 {
     public void Run() throws IOException {
         startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
+            int l = seq[i].length();
             reallen = 0;
-            byte[] u = Mask(seq[i], kmerln);
-            MaskSave(i, u);
-            ClusteringMasking(seq[i], u, minlenblock, minlenseq);
-            if (GFFShow) {
-                GffSave(i);
+            repeatslen = 0;
+
+            if (l > minlenseq) {
+                int[] u = Mask(seq[i], kmerln, minlenblock, minlenseq);
+                if (u.length < 2) {
+                    return;
+                }
+                repeatslen = (repeatslen * 100) / reallen;
+                gaps = ((l - reallen) * 100) / l;
+
+                System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
+                System.out.println("Sequence gap (bp)=" + String.format("%.0f", (l - reallen)) + " " + String.format("%.2f", gaps) + "%\n");
+
+                if (MaskedShow) {
+                    MaskSave(i, u);
+                }
+                bb = new ArrayList<>();
+                ClusteringMasking(seq[i], u, similarity, minlenseq);
+
+                if (bb != null) {
+                    if (GFFShow) {
+                        GffSave(i);
+                    }
+                    PictureSave(i, iwidth, iheight);
+                }
             }
-            PictureSave(i, iwidth, iheight);
         }
     }
 
-    private byte[] Mask(String seq, int kmer) {
+    private int[] Mask(String seq, int kmer, int minlenblock, int minlenseq) {
         int l = seq.length();
         int i = 0;
         int j = 0;
@@ -191,13 +211,10 @@ public final class Tandems2 {
                 ax[j] = ax[j + 1];
             }
         }
-        return u;
-    }
 
-    private int ClusteringMasking(String seq, byte[] u, int minlenblock, int minlenseq) {
+        // combining
         ArrayList<Integer> z = new ArrayList<>();
-        int j = 0;
-        for (int i = 0; i < u.length; i++) {
+        for (i = 0; i < u.length; i++) {
             if (u[i] > 0) {
                 int x1 = i;
                 int x2 = i;
@@ -227,39 +244,44 @@ public final class Tandems2 {
             }
         }
 
+        u = new byte[0];        // clear array
         int n = 0;
-        for (int i = 0; i < z.size(); i += 2) {
+        for (i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) {
                 n += 2;
             }
         }
-        int[] z2 = new int[n];//x1-x2 block
+        int[] z2 = new int[n];   //x1-x2 block
         n = -1;
-        for (int i = 0; i < z.size(); i += 2) {
+        for (i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) { // join blocks at short distance
                 z2[++n] = x1;
                 z2[++n] = x2;
+                repeatslen = repeatslen + (x2 - x1 + 1);
             }
         }
+        return z2;
+    }
 
+    private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
         SequencesClustering sc = new SequencesClustering(seq, z2, similarity, true, minlenseq);
         int[] q = sc.Result(); // cluster ID for each block
         int ncl = sc.getNcl();
+
         if (q.length < 1) {
             return -1;
         }
 
-        bb = new ArrayList<>();
+        int j;
         for (int f = 1; f < ncl + 1; f++) {
             int[] k7 = new int[q.length + q.length + 1];
             int h = 0;
-            int p = 0;
             for (j = 0; j < q.length; j++) {
-                p = j * 2;
+                int p = j * 2;
                 if (q[j] == f) {
                     k7[0] = k7[0] + 2;
                     h++;
@@ -278,32 +300,8 @@ public final class Tandems2 {
                 bb.add(k7);
             }
         }
-
-        //SortBlocks();
         ShellSort();
         return bb.size();
-    }
-
-    private void SortBlocks() {
-        if (bb == null) {
-            return;
-        }
-        int n = bb.size();
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = i;
-            int[] zi = bb.get(i);
-            for (int j = i + 1; j < n; j++) {
-                int[] zj = bb.get(j);
-                if (zj[0] > zi[0]) {
-                    minIndex = j;
-                    zi = zj; // Update zi to the new minimum element
-                }
-            }
-            // Swap the elements at i and minIndex
-            int[] temp = bb.get(i);
-            bb.set(i, bb.get(minIndex));
-            bb.set(minIndex, temp);
-        }
     }
 
     public void ShellSort() {
@@ -329,42 +327,26 @@ public final class Tandems2 {
         return destArray;
     }
 
-    private void MaskSave(int n, byte[] m) throws IOException {
-        if (m == null) {
-            return;
+    private void MaskSave(int n, int[] m) throws IOException {
+        String maskedfile = filePath + "_" + (n + 1) + ".msk";
+        if (nseq == 1) {
+            maskedfile = filePath + ".msk";
         }
-        int l = seq[n].length();
-        repeatslen = 0;
-        byte[] c = seq[n].getBytes();
-        for (int i = 0; i < l; i++) {
-            if (m[i] > 0) {              // if (m[i] == 0) {
-                repeatslen++;
-                c[i] = (byte) (c[i] - 32);
-            }
-        }
-        repeatslen = (repeatslen * 100) / reallen;
-        gaps = ((l - reallen) * 100) / l;
+        try (FileWriter fileWriter = new FileWriter(maskedfile)) {
+            System.out.println("Saving masked file: " + maskedfile);
 
-        System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-        System.out.println("Sequence gap (bp)=" + String.format("%.0f", (l - reallen)) + " " + String.format("%.2f", gaps) + "%\n");
-
-        if (MaskedShow) {
-            String maskedfile = filePath + "_" + (n + 1) + ".msk";
-            if (nseq == 1) {
-                maskedfile = filePath + ".msk";
+            byte[] c = seq[n].getBytes();
+            for (int j = 0; j < m.length; j += 2) {
+                for (int i = m[j]; i <= m[j + 1]; i++) {
+                    c[i] = (byte) (c[i] - 32);
+                }
             }
-            try (FileWriter fileWriter = new FileWriter(maskedfile)) {
-                System.out.println("Saving masked file: " + maskedfile);
-                fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.2f", repeatslen) + "%\n");
-                fileWriter.write(new String(c));
-            }
+            fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.2f", repeatslen) + "%\n");
+            fileWriter.write(new String(c));
         }
     }
 
     private void GffSave(int n) throws IOException {
-        if (bb == null) {
-            return;
-        }
         int k = 0;
         int l = seq[n].length();
         long duration = (System.nanoTime() - startTime) / 1000000000;
@@ -386,14 +368,13 @@ public final class Tandems2 {
             sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
         }
 
-        try (FileWriter fileWriter = new FileWriter(reportfile)) {
+        try (FileWriter fileWriter = new FileWriter(reportfile); BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
             System.out.println("Saving report file: " + reportfile);
-            fileWriter.write(sr.toString());
+            bufferedWriter.write(sr.toString());
             for (int i = 0; i < bb.size(); i++) {
                 int[] z7 = bb.get(i);
                 k++;
                 for (int j = 1; j < z7.length; j += 2) {
-
                     String s0 = "";
                     int x = z7[j] + Math.abs(z7[j + 1]) - 1;
 
@@ -428,16 +409,13 @@ public final class Tandems2 {
                     }
                     sr = new StringBuilder();
                     sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append(".").append("\t").append(".").append("\t").append(s0).append("\n");
-                    fileWriter.write(sr.toString());
+                    bufferedWriter.write(sr.toString());
                 }
             }
         }
     }
 
     private void PictureSave(int n, int dw, int dh) throws IOException {
-        if (bb == null) {
-            return;
-        }
         int b = bb.size();
         int z = 20;          // step between clusters
         if (b > 300) {
@@ -537,23 +515,23 @@ public final class Tandems2 {
         }
     }
 
-    private String filePath;
-    public int nseq;
-    public int iwidth = 0;
-    public int iheight = 0;
-    public double reallen = 0;
-    public double gaps = 0;
-    public double repeatslen = 0;
-    private String[] seq;
-    private String[] sname;
-    public int similarity = 70;
-    private int minlenblock = 25;   // repeat length user control  
+    private double reallen = 0;
+    private double gaps = 0;
+    private double repeatslen = 0;
+    private long startTime;
+    private int nseq = 0;
+    private int iwidth = 0;
+    private int iheight = 0;
+    private int similarity = 70;
+    private int minlenblock = 30;   // repeat length user control  
     private int minlenseq = 50;     // sequence length 
     private int kmerln = 21;
     private int flanks = 20;
     private boolean SeqShow;
-    private ArrayList<int[]> bb;
-    private long startTime;
     private boolean MaskedShow;
     private boolean GFFShow;
+    private String filePath;
+    private String[] seq;
+    private String[] sname;
+    private ArrayList<int[]> bb;
 }
