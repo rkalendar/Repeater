@@ -40,6 +40,7 @@ public class Repeater {
             }
             if (s.contains("ssr=true")) {
                 ssrrun = true;
+                quickshow = false;
             }
             if (s.contains("flanks=")) {
                 flanksshow = 0;
@@ -194,9 +195,7 @@ public class Repeater {
             if (quickshow) {
                 Tandems2 s2 = new Tandems2();
                 s2.SetSequences(rf.getSequences(), rf.getNames());
-                s2.SetKmerLen(kmer);
-                s2.SetMinimalRepeatLen(minlen);
-                s2.SetSequenceLen(seqlen);
+                s2.SetRepeatLen(kmer, minlen, seqlen);
                 s2.SetShowSeq(seqshow);
                 s2.SetFlanks(flanksshow);
                 s2.SetMasked(maskshow);
@@ -213,9 +212,7 @@ public class Repeater {
             } else {
                 Tandems s2 = new Tandems();
                 s2.SetSequences(rf.getSequences(), rf.getNames());
-                s2.SetKmerLen(kmer);
-                s2.SetTandemLen(minlen);
-                s2.SetSequenceLen(seqlen);
+                s2.SetRepeatLen(kmer, minlen, seqlen);
                 s2.SetMasked(maskshow);
                 s2.SetGFF(gffshow);
                 s2.SetShowSeq(seqshow);

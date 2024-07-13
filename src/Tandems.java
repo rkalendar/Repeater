@@ -23,13 +23,19 @@ public final class Tandems {
         filePath = a;
     }
 
-    public void SetKmerLen(int i) {
-        kmerln = i;
-        if (kmerln < 5) {
-            kmerln = 5;
+    public void SetRepeatLen(int kmer, int minlen, int minseq) {
+        kmerln = kmer;
+        minlenblock = minlen;
+        minlenseq = minseq;
+        if (kmerln < 12) {
+            kmerln = 12;
         }
-        minlenblock = kmerln + kmerln;
-        minlenseq = minlenblock;
+        if (minlenblock < kmerln) {
+            minlenblock = kmerln;
+        }
+        if (minlenseq < minlenblock) {
+            minlenseq = minlenblock;
+        }
     }
 
     public void SetImage(int w, int h) {
@@ -48,21 +54,6 @@ public final class Tandems {
         }
         if (nblocks > 1000) {
             nblocks = 1000;
-        }
-    }
-
-    public void SetTandemLen(int i) {
-        minlenblock = i;
-        if (minlenblock < mnblock) {
-            minlenblock = mnblock;
-        }
-        minlenseq = minlenblock;
-    }
-
-    public void SetSequenceLen(int i) {
-        minlenseq = i;
-        if (minlenseq < minlenblock) {
-            minlenseq = minlenblock;
         }
     }
 
@@ -802,7 +793,7 @@ public final class Tandems {
                 System.out.println("Sequence coverage by repeats " + String.format("%.2f", z) + "%");
             }
         }
-        
+
         if (GFFShow) {
             StringBuilder sr = new StringBuilder();
             sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\nQuick analysis is false\n");
