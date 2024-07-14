@@ -64,22 +64,22 @@ public final class Tandems2 {
     }
 
     public void Run() throws IOException {
-        startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
             int l = seq[i].length();
             reallen = 0;
             repeatslen = 0;
 
             if (l > minlenseq) {
+                startTime = System.nanoTime();
                 int[] u = Mask(seq[i], kmerln, minlenblock, minlenseq);
                 if (u.length < 2) {
                     return;
                 }
-                repeatslen = (repeatslen * 100) / reallen;
-                gaps = ((l - reallen) * 100) / l;
+                repeatslen = (repeatslen * 100) / (l - reallen);
+                gaps = (reallen * 100) / l;
 
                 System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                System.out.println("Sequence gap (bp)=" + String.format("%.0f", (l - reallen)) + " " + String.format("%.2f", gaps) + "%\n");
+                System.out.println("Sequence gap (bp)=" + String.format("%.0f", reallen) + " (" + String.format("%.2f", gaps) + "%)\n");
 
                 if (MaskedShow) {
                     MaskSave(i, u);
@@ -115,7 +115,7 @@ public final class Tandems2 {
         for (i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];
             c[i] = tables.dx2[c[i]];
-            if (bx[4] == 0) {
+            if (b[i] == 4) {
                 reallen++;
             }
         }
@@ -301,14 +301,13 @@ public final class Tandems2 {
                 bb.add(k7);
             }
         }
-        ShellSort();
+        if (bb != null) {
+            ShellSort();
+        }
         return bb.size();
     }
 
     public void ShellSort() {
-        if (bb == null) {
-            return;
-        }
         int n = bb.size();
         for (int gap = n / 2; gap > 0; gap /= 2) {
             for (int i = gap; i < n; i++) {

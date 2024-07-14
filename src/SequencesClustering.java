@@ -53,7 +53,7 @@ public final class SequencesClustering {
                     m.put(s, t);
                 }
 
-                s = dna.ComplementDNA(s);//s = a.substring(i, i + kmer);
+                s = dna.ComplementDNA2(s);//s = a.substring(i, i + kmer);
                 if (m.containsKey(s)) {
                     int[] t = m.get(s);
                     if (t[1] < (j + 1)) {
@@ -73,7 +73,6 @@ public final class SequencesClustering {
 
         for (int j = 0; j < nseq; j++) {
             int p = j * 2;
-            //   String a = dna.ComplementDNA(seq.substring(x1[p], x1[p + 1]));
             for (int i = 0; i < lx[j] - kmer + 1; i++) {
                 String s = seq.substring(x1[p] + i, x1[p] + i + kmer);
                 if (map.containsKey(s)) {
@@ -97,7 +96,7 @@ public final class SequencesClustering {
                 }
 
                 // s = a.substring(i, i + kmer); // memory problem - Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
-                s = dna.ComplementDNA(s);//s = a.substring(i, i + kmer);
+                s = dna.ComplementDNA2(s);//s = a.substring(i, i + kmer);
                 if (map.containsKey(s)) {
                     int[] y = map.get(s);
                     if (y[0] == j) {
@@ -139,7 +138,7 @@ public final class SequencesClustering {
                 }
 
                 // s = a.substring(i, i + kmer);
-                s = dna.ComplementDNA(s);
+                s = dna.ComplementDNA2(s);
                 t = map.get(s);
                 for (int h = 2; h < t.length; h = h + 2) {
                     if (t[h] == j) {
