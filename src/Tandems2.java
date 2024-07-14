@@ -76,10 +76,11 @@ public final class Tandems2 {
                     return;
                 }
                 repeatslen = (repeatslen * 100) / (l - reallen);
-                gaps = (reallen * 100) / l;
+                gaps = (reallen / l) * 100;
 
+                System.out.println("Target sequence length = " + l + " nt");
                 System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                System.out.println("Sequence gap (bp)=" + String.format("%.0f", reallen) + " (" + String.format("%.2f", gaps) + "%)\n");
+                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.2f", gaps) + "%)\n");
 
                 if (MaskedShow) {
                     MaskSave(i, u);
@@ -361,8 +362,9 @@ public final class Tandems2 {
             System.out.println("Saving report file: " + reportfile);
             StringBuilder sr = new StringBuilder();
             sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\n\n");
+            sr.append("Sequence length = ").append(l).append("\n");
             sr.append("Sequence coverage by repeats = ").append(String.format("%.2f", repeatslen)).append("%\n");
-            sr.append("Sequence gap (bp)=").append(l - reallen).append(" (").append(String.format("%.3f", gaps)).append("%)\n");
+            sr.append("Sequence gap (bp)=").append((int) reallen).append(" (").append(String.format("%.2f", gaps)).append("%)\n");
             sr.append("Time taken: ").append(duration).append(" seconds\n\n");
             sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
             if (SeqShow) {
@@ -380,7 +382,7 @@ public final class Tandems2 {
                     int x = z7[j] + Math.abs(z7[j + 1]) - 1;
 
                     if (SeqShow) {
-                        if (x > seq[n].length()) {
+                        if (x > l) {
                             s0 = seq[n].substring(z7[j]);
                         } else {
                             s0 = seq[n].substring(z7[j], x);

@@ -10,9 +10,9 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 21;
+            int kmer = 21; //quick ideal 21-30-60 
             int minlen = 30;
-            int seqlen = 50;
+            int seqlen = 60;
             int width = 0;
             int hight = 0;
             int flanksshow = 0;
@@ -198,7 +198,6 @@ public class Repeater {
             if (rf.getNseq() > 1) {
                 System.out.println("Target FASTA sequences = " + rf.getNseq());
             }
-            System.out.println("Target sequence length = " + rf.getLength() + " nt");
             System.out.println("Shown repeated sequence is " + seqshow);
             if (flanksshow > 0) {
                 System.out.println("Flanks around sequence is " + flanksshow);
