@@ -5,7 +5,8 @@ public final class tables {
     static final public byte[] cdna = new byte[128];
     static final public byte[] cdnat2 = new byte[5];
     static final public byte[] cdn = new byte[128];
-
+    static final public byte[] dx = new byte[128];
+    
     static {
 // "M=(A/C) R=(A/G) W=(A/T) S=(G/C) Y=(C/T) K=(G/T) V=(A/G/C) H=(A/C/T) D=(A/G/T) B=(C/G/T) N=(A/G/C/T), U=T and I"
 //        a  CGT  c  AGT  a   c   g   ACT g   g   GT  t   AC  ATGC AG  GC  t  t   AGC AT   CT
@@ -116,5 +117,28 @@ public final class tables {
         cdna[118] = 98; // b <- v
         cdna[119] = 119;// w <- w
         cdna[121] = 114;// r <- y
+        
+        //tb=dx
+        dx[97] = 0;   //a =0
+        dx[119] = 0;  //at                   
+        dx[101] = 0;  //a  
+        dx[108] = 1;  //t = 1            
+        dx[116] = 1;  //t 
+        dx[117] = 1;  //u  
+        dx[98] = 2;   //tgc         
+        dx[99] = 2;   //c = 2
+        dx[102] = 2;  //c        
+        dx[104] = 2;  //atc   
+        dx[121] = 2;  //tc        
+        dx[109] = 2;  //ac
+        dx[115] = 2;  //gc        
+        dx[103] = 3;  //g = 3
+        dx[105] = 3;  //g 
+        dx[106] = 3;  //g      
+        dx[107] = 3;  //gt   
+        dx[114] = 3;  //ag         
+        dx[118] = 3;  //agc   
+        dx[100] = 3;  //atg 
+        dx[110] = 4;  //atgc 
     }
 }

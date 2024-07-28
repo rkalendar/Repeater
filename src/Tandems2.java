@@ -86,7 +86,7 @@ public final class Tandems2 {
                     MaskSave(i, u);
                 }
                 bb = new ArrayList<>();
-                ClusteringMasking(seq[i], u, similarity, minlenseq);
+                ClusteringMasking(seq[i], u, similarity, 9);
 
                 if (bb != null) {
                     if (GFFShow) {
@@ -267,6 +267,45 @@ public final class Tandems2 {
             }
         }
         return z2;
+    }
+
+    private int ClusteringMasking2(String seq, int[] z2, int similarity, int minlenseq) {
+        SequencesClustering2 sc = new SequencesClustering2(seq, z2, similarity, minlenseq);
+        int ncl = sc.getNcl();
+        int[] q = sc.getClusters(); // list sequences belong to ID clusters      
+        int[] k = new int[z2.length];
+        if (q.length < 1) {
+            return -1;
+        }
+
+        int j;
+        for (int f = 1; f < ncl + 1; f++) {
+            int[] k7 = new int[q.length + q.length + 1];
+            int h = 0;
+            for (j = 0; j < q.length; j++) {
+                int p = j * 2;
+                if (q[j] == f) {
+                    k7[0] = k7[0] + 2;
+                    h++;
+                    k7[h] = z2[p];
+                    h++;
+                    k7[h] = z2[p + 1] - z2[p] + 1;
+                }
+            }
+            if (h > 0) {
+                k7 = ArrayTrim(k7, k7[0] + 1);
+                for (int i = 2; i < k7.length; i += 2) {
+                    if (k7[0] < k7[i]) {
+                        k7[0] = k7[i];
+                    }
+                }
+                bb.add(k7);
+            }
+        }
+        if (bb != null) {
+            ShellSort();
+        }
+        return bb.size();
     }
 
     private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
