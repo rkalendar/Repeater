@@ -87,13 +87,8 @@ public final class Tandems2 {
                     MaskSave(i, u);
                 }
                 bb = new ArrayList<>();
-                if (l > 200000000) {
-                    // ClusteringMasking2(seq[i], u, similarity);
-                    ClusteringMasking(seq[i], u, 100, 9);
-                } else {
-                    ClusteringMasking(seq[i], u, 100, 9);
-                    //  ClusteringMasking2(seq[i], u, similarity);
-                }
+                ClusteringMasking(seq[i], u, 100, 9);
+
                 if (bb != null) {
                     if (GFFShow) {
                         GffSave(i);
@@ -106,10 +101,6 @@ public final class Tandems2 {
 
     private int[] Mask(String seq, int kmer, int minlenblock, int minlenseq) {
         int l = seq.length();
-        int i = 0;
-        int j = 0;
-        int p = 0;
-        String s;
         String aseq = dna.ComplementDNA(seq);
         HashMap<String, Integer> map = new HashMap<>();
 
@@ -118,7 +109,8 @@ public final class Tandems2 {
 
         byte b[] = seq.getBytes();
         byte c[] = aseq.getBytes();
-        for (i = 0; i < l; i++) {
+
+        for (int i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];
             c[i] = tables.dx2[c[i]];
             if (b[i] == 4) {
@@ -126,107 +118,108 @@ public final class Tandems2 {
             }
         }
 
-        for (i = 0; i < kmer - 1; i++) {
+        for (int i = 0; i < kmer - 1; i++) {
             ax[i] = b[i];
             bx[ax[i]]++;
         }
-        for (i = kmer - 1; i < l; i++) {
+        for (int i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[i];
             bx[ax[kmer - 1]]++;
             if (bx[4] == 0) {
-                s = seq.substring(i - kmer + 1, i + 1);
+                String s = seq.substring(i - kmer + 1, i + 1);
                 if (map.containsKey(s)) {
-                    p = map.get(s) + 1;
+                    int p = map.get(s) + 1;
                     map.replace(s, p);
                 } else {
                     map.put(s, 1);
                 }
             }
             bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
+            for (int j = 0; j < kmer - 1; j++) {
                 ax[j] = ax[j + 1];
             }
         }
         //reverse
         bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
+        for (int i = 0; i < kmer - 1; i++) {
             ax[i] = c[i];
             bx[ax[i]]++;
         }
-        for (i = kmer - 1; i < l; i++) {
+        for (int i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = c[i];
             bx[ax[kmer - 1]]++;
             if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
+                String s = aseq.substring(i - kmer + 1, i + 1);
                 if (map.containsKey(s)) {
-                    p = map.get(s) + 1;
+                    int p = map.get(s) + 1;
                     map.replace(s, p);
                 }
             }
             bx[c[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
+            for (int j = 0; j < kmer - 1; j++) {
                 ax[j] = ax[j + 1];
             }
         }
 
         int[] u = new int[l];
         bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
+        for (int i = 0; i < kmer - 1; i++) {
             ax[i] = b[i];
             bx[ax[i]]++;
         }
-        for (i = kmer - 1; i < l; i++) {
+        for (int i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = b[i];
             bx[ax[kmer - 1]]++;
             int x = i - kmer + 1;
             if (bx[4] == 0) {
-                s = seq.substring(x, i + 1);
-                p = map.get(s);
+                String s = seq.substring(x, i + 1);
+                int p = map.get(s);
                 if (p > 1) {
-                    for (j = x; j < x + kmer; j++) {
+                    for (int j = x; j < x + kmer; j++) {
                         u[j]++;
                     }
                 }
             }
             bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
+            for (int j = 0; j < kmer - 1; j++) {
                 ax[j] = ax[j + 1];
             }
         }
         //reverse
         bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
+        for (int i = 0; i < kmer - 1; i++) {
             ax[i] = c[i];
             bx[ax[i]]++;
         }
-        for (i = kmer - 1; i < l; i++) {
+        for (int i = kmer - 1; i < l; i++) {
             ax[kmer - 1] = c[i];
             if (bx[4] == 0) {
                 int x = i - kmer + 1;
-                s = aseq.substring(x, i + 1);
+                String s = aseq.substring(x, i + 1);
                 if (map.containsKey(s)) {
-                    p = map.get(s);
+                    int p = map.get(s);
                     if (p > 1) {
-                        for (j = x; j < x + kmer; j++) {
+                        for (int j = x; j < x + kmer; j++) {
                             u[j]++;
                         }
                     }
                 }
             }
             bx[c[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
+            for (int j = 0; j < kmer - 1; j++) {
                 ax[j] = ax[j + 1];
             }
         }
 
         // combining
         ArrayList<Integer> z = new ArrayList<>();
-        for (i = 0; i < u.length; i++) {
+        for (int i = 0; i < u.length; i++) {
             if (u[i] > 0) {
                 int x1 = i;
                 int x2 = i;
                 int y = 0;
-                for (j = i + 1; j < u.length; j++) {
+                int x = i + 1;
+                for (int j = x; j < u.length; j++) {
                     if (u[j] > 1) {
                         x2 = j;
                     } else {
@@ -235,8 +228,9 @@ public final class Tandems2 {
                             break;
                         }
                     }
+                    i = j;
                 }
-                i = j - 1;
+
                 if (x2 > x1) {
                     if (z.isEmpty()) {
                         z.add(x1);
@@ -257,7 +251,7 @@ public final class Tandems2 {
 
         u = new int[0]; // clear array
         int n = 0;
-        for (i = 0; i < z.size(); i += 2) {
+        for (int i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) {
@@ -266,7 +260,7 @@ public final class Tandems2 {
         }
         int[] z2 = new int[n];   //x1-x2 block
         n = -1;
-        for (i = 0; i < z.size(); i += 2) {
+        for (int i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) { // join blocks at short distance
@@ -278,95 +272,28 @@ public final class Tandems2 {
         return z2;
     }
 
-    private int ClusteringMasking2(String seq, int[] z2, int similarity) {
-        SequencesClustering2 sc = new SequencesClustering2(seq, z2, similarity);
-        int ncl = sc.getNcl();
-        int[] q = sc.getClusters(); // list sequences belong to ID clusters      
-        if (q.length < 1) {
-            return -1;
-        }
-
-        int j;
-        for (int f = 1; f < ncl + 1; f++) {
-            int[] k7 = new int[q.length + q.length + 1];
-            int h = 0;
-            for (j = 0; j < q.length; j++) {
-                int p = j * 2;
-                if (q[j] == f) {
-                    k7[0] = k7[0] + 2;
-                    h++;
-                    k7[h] = z2[p];
-                    h++;
-                    k7[h] = z2[p + 1] - z2[p] + 1;
-                }
-            }
-            if (h > 0) {
-                k7 = ArrayTrim(k7, k7[0] + 1);
-                for (int i = 2; i < k7.length; i += 2) {
-                    if (k7[0] < k7[i]) {
-                        k7[0] = k7[i];
-                    }
-                }
-                bb.add(k7);
-            }
-        }
-        if (bb != null) {
-            ShellSort();
-        }
-        return bb.size();
-    }
-
     private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
-        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, true, minlenseq);
-        int[] q = sc.Result(); // cluster ID for each block
+        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, minlenseq);
+        int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
+        int[] q = sc.Result();        // cluster ID for each block
         int ncl = sc.getNcl();
 
-        if (q.length < 1) {
+        if (ncl < 1) {
             return -1;
         }
 
-        int j;
-        for (int f = 1; f < ncl + 1; f++) {
-            int[] k7 = new int[q.length + q.length + 1];
-            int h = 0;
-            for (j = 0; j < q.length; j++) {
-                int p = j * 2;
-                if (q[j] == f) {
-                    k7[0] = k7[0] + 2;
-                    h++;
-                    k7[h] = z2[p];
-                    h++;
-                    k7[h] = z2[p + 1] - z2[p] + 1;
+        for (int j = 1; j <= ncl; j++) {
+            ArrayList<Integer> z = new ArrayList<>();
+            z.add(0);
+            for (int i = 0; i < q.length; i++) {
+                if (q[i] == j) {
+                    z.add(d[i][0]);
+                    z.add(d[i][1]);
                 }
             }
-            if (h > 0) {
-                k7 = ArrayTrim(k7, k7[0] + 1);
-                for (int i = 2; i < k7.length; i += 2) {
-                    if (k7[0] < k7[i]) {
-                        k7[0] = k7[i];
-                    }
-                }
-                bb.add(k7);
-            }
-        }
-        if (bb != null) {
-            ShellSort();
+            bb.add(z.stream().mapToInt(Integer::intValue).toArray());
         }
         return bb.size();
-    }
-
-    public void ShellSort() {
-        int n = bb.size();
-        for (int gap = n / 2; gap > 0; gap /= 2) {
-            for (int i = gap; i < n; i++) {
-                int[] temp = bb.get(i);
-                int j;
-                for (j = i; j >= gap && bb.get(j - gap)[0] < temp[0]; j -= gap) {
-                    bb.set(j, bb.get(j - gap));
-                }
-                bb.set(j, temp);
-            }
-        }
     }
 
     public int[] ArrayTrim(int[] srcArray, int n) {
