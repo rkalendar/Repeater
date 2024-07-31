@@ -25,13 +25,14 @@ public final class Tandems2 {
 
     public void SetRepeatLen(int kmer, int minlen, int minseq) {
         kmerln = kmer;
+        gap = kmer;
         minlenblock = minlen;
         minlenseq = minseq;
         if (kmerln < 12) {
             kmerln = 12;
         }
-        if (minlenblock < kmerln) {
-            minlenblock = kmerln;
+        if (minlenblock < kmer) {
+            minlenblock = kmer;
         }
         if (minlenseq < minlenblock) {
             minlenseq = minlenblock;
@@ -86,8 +87,13 @@ public final class Tandems2 {
                     MaskSave(i, u);
                 }
                 bb = new ArrayList<>();
-                ClusteringMasking(seq[i], u, similarity, 9);
-
+                if (l > 200000000) {
+                    // ClusteringMasking2(seq[i], u, similarity);
+                    ClusteringMasking(seq[i], u, 100, 9);
+                } else {
+                    ClusteringMasking(seq[i], u, 100, 9);
+                    //  ClusteringMasking2(seq[i], u, similarity);
+                }
                 if (bb != null) {
                     if (GFFShow) {
                         GffSave(i);
@@ -103,7 +109,6 @@ public final class Tandems2 {
         int i = 0;
         int j = 0;
         int p = 0;
-
         String s;
         String aseq = dna.ComplementDNA(seq);
         HashMap<String, Integer> map = new HashMap<>();
@@ -164,7 +169,7 @@ public final class Tandems2 {
             }
         }
 
-        byte[] u = new byte[l];
+        int[] u = new int[l];
         bx = new int[5];
         for (i = 0; i < kmer - 1; i++) {
             ax[i] = b[i];
@@ -179,7 +184,7 @@ public final class Tandems2 {
                 p = map.get(s);
                 if (p > 1) {
                     for (j = x; j < x + kmer; j++) {
-                        u[j] = 3;
+                        u[j]++;
                     }
                 }
             }
@@ -203,7 +208,7 @@ public final class Tandems2 {
                     p = map.get(s);
                     if (p > 1) {
                         for (j = x; j < x + kmer; j++) {
-                            u[j] = 2;
+                            u[j]++;
                         }
                     }
                 }
@@ -220,11 +225,15 @@ public final class Tandems2 {
             if (u[i] > 0) {
                 int x1 = i;
                 int x2 = i;
+                int y = 0;
                 for (j = i + 1; j < u.length; j++) {
-                    if (u[j] > 0) {
+                    if (u[j] > 1) {
                         x2 = j;
                     } else {
-                        break;
+                        y++;
+                        if (y > gap) {
+                            break;
+                        }
                     }
                 }
                 i = j - 1;
@@ -246,7 +255,7 @@ public final class Tandems2 {
             }
         }
 
-        u = new byte[0];        // clear array
+        u = new int[0]; // clear array
         int n = 0;
         for (i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
@@ -269,11 +278,10 @@ public final class Tandems2 {
         return z2;
     }
 
-    private int ClusteringMasking2(String seq, int[] z2, int similarity, int minlenseq) {
-        SequencesClustering2 sc = new SequencesClustering2(seq, z2, similarity, minlenseq);
+    private int ClusteringMasking2(String seq, int[] z2, int similarity) {
+        SequencesClustering2 sc = new SequencesClustering2(seq, z2, similarity);
         int ncl = sc.getNcl();
         int[] q = sc.getClusters(); // list sequences belong to ID clusters      
-        int[] k = new int[z2.length];
         if (q.length < 1) {
             return -1;
         }
@@ -474,7 +482,7 @@ public final class Tandems2 {
         }
 
         int l = seq[n].length();
-        int width = l > 5_000_000 ? 10000 : l / 500; // image=10000x3000 l < 5_000_000 ? l / 250 : 5_000 + (l - 5_000) / 250;
+        int width = l > 5_000_000 ? 100000 : l / 50; // image=10000x3000 l < 5_000_000 ? l / 250 : 5_000 + (l - 5_000) / 250;
 
         if (dw > 0) {
             width = dw;
@@ -569,6 +577,7 @@ public final class Tandems2 {
     private int minlenseq = 50;     // sequence length 
     private int kmerln = 21;
     private int flanks = 20;
+    private int gap = 21;
     private boolean SeqShow;
     private boolean MaskedShow;
     private boolean GFFShow;
