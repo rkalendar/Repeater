@@ -893,7 +893,8 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         int k = 100;
         int b = bb.size();
         int l = seq[n].length();
-        int width = l < 5_000_000 ? l / 100 : 5_000 + (l - 5_000) / 200; // image=10000x3000
+        //int width = l < 5_000_000 ? l / 100 : 5_000 + (l - 5_000) / 200; // image=10000x3000
+        int width = l < 10_000_000 ? l / 200 : 50000;
         if (dw > 0) {
             width = dw;
         }

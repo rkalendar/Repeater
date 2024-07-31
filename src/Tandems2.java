@@ -81,7 +81,7 @@ public final class Tandems2 {
 
                 System.out.println("Target sequence length = " + l + " nt");
                 System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.2f", gaps) + "%)\n");
+                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
 
                 if (MaskedShow) {
                     MaskSave(i, u);
@@ -411,7 +411,7 @@ public final class Tandems2 {
             sr.append("kmer=").append(kmerln).append("\n").append("Minimal repeat=").append(minlenblock).append("\n").append("Repeat filter=").append(minlenseq).append("\n\n");
             sr.append("Sequence length = ").append(l).append("\n");
             sr.append("Sequence coverage by repeats = ").append(String.format("%.2f", repeatslen)).append("%\n");
-            sr.append("Sequence gap (bp)=").append((int) reallen).append(" (").append(String.format("%.2f", gaps)).append("%)\n");
+            sr.append("Sequence gap (bp)=").append((int) reallen).append(" (").append(String.format("%.4f", gaps)).append("%)\n");
             sr.append("Time taken: ").append(duration).append(" seconds\n\n");
             sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
             if (SeqShow) {
@@ -482,7 +482,9 @@ public final class Tandems2 {
         }
 
         int l = seq[n].length();
-        int width = l > 5_000_000 ? 100000 : l / 50; // image=10000x3000 l < 5_000_000 ? l / 250 : 5_000 + (l - 5_000) / 250;
+        int width = l < 10_000_000 ? l / 200 : 50000;
+        //int width =  /l > 5_000_000 ? 100000 : l / 50;  
+        //int width = l < 5_000_000 ? l / 250 : 5_000 + (l - 5_000) / 250;
 
         if (dw > 0) {
             width = dw;
