@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -74,15 +73,12 @@ public final class SequencesClustering {
         }
         return n;
     }
-
     public int getNcl() {
         return ncl;
     }
-
     public int[] Result() {
         return cx;
     }
-
     public int[][] ResultArray() {
         return d;
     }
