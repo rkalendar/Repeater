@@ -274,8 +274,9 @@ public final class Tandems2 {
     }
 
     private int ClusteringMasking(int[] x1) {
-        int n = x1.length / 2;;
+        int n = x1.length / 2;
         int[][] d = new int[n][2];
+        int k = (n / 50 < 10) ? n : n / 50;
 
         for (int j = 0; j < n; j++) {
             int p = j * 2;
@@ -286,12 +287,19 @@ public final class Tandems2 {
             return Integer.compare(b[1], a[1]);
         });
 
-        for (int j = 0; j < n; j++) {
-            int[] k7 = new int[3];
-            k7[0] = 2;
-            k7[1] = d[j][0];
-            k7[2] = d[j][1];
-
+        for (int j = 0; j < n; j += k) {
+            int[] k7 = new int[k + k + 1];
+            k7[0] = k + k;
+            int u = 0;
+            int i = 0;
+            int t = j + k;
+            if (t > n) {
+                t = n;
+            }
+            for (i = j; i < t; i++) {
+                k7[++u] = d[i][0];
+                k7[++u] = d[i][1];
+            }
             bb.add(k7);
         }
         return bb.size();
