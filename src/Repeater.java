@@ -18,6 +18,7 @@ public class Repeater {
             int flanksshow = 0;
             boolean maskshow = true;
             boolean quickshow = true;
+            boolean maskpicture = false;
             boolean seqshow = false;
             boolean ssrrun = false;
             boolean gffshow = true;
@@ -28,6 +29,9 @@ public class Repeater {
 
             if (s.contains("mask=false")) {
                 maskshow = false;
+            }
+            if (s.contains("maskpic=false")) {
+                maskpicture = true;
             }
             if (s.contains("gff=false")) {
                 gffshow = false;
@@ -123,14 +127,14 @@ public class Repeater {
                     }
                     for (String nfile : filelist) {
                         try {
-                            SaveResult(nfile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight);
+                            SaveResult(nfile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
                         } catch (Exception e) {
                             System.err.println("Failed to open file: " + nfile);
                         }
                     }
 
                 } else {
-                    SaveResult(infile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight);
+                    SaveResult(infile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
                 }
             }
 
@@ -144,18 +148,19 @@ public class Repeater {
             System.out.println("sln=150\tstring length (default sln=50), it can be equal to 'min'");
             System.out.println("flangs=100\textend the flanks of the repeat with an appropriate length (100 nt) (default flangs=0)");
             System.out.println("image=10000x3000\t (by default, the dimensionality of the image is automatically determined)");
-            System.out.println("mask=true/false\tgenerate a new file with masking repeats (default mask=true)");
+            System.out.println("mask=true/false\tquick generation a new file with masking repeats (default mask=true)");
+            System.out.println("maskpic=true/false\tgenerate a image file with masking repeats (default maskpic=false)");
             System.out.println("gff=true/false\tgenerate a GFF file (default gff=true)");
             System.out.println("seqshow=true/false\textract repeat sequences (default seqshow=false)");
             System.out.println("quick=true/false\tquick analysis of repeats, without deep analysis and their clustering (default quick=true)");
             System.out.println("ssr=true\tanalyzing only the SSR/telomers loci (default ssr=false)\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
-            System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 min=100 sln=300 quick=false mask=true\n");
+            System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 min=100 sln=100 quick=false mask=true\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
             System.out.println("Large genome settings:");
-            System.out.println("java -jar -Xms16g -Xmx64g \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 min=25\n");
+            System.out.println("java -jar -Xms16g -Xmx64g \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=21 min=30 sln=100\n");
             System.out.println("Analysing all files in the directory:");
-            System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar \\Repeater2\\test\\ kmer=21 min=25\n");
+            System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar \\Repeater2\\test\\ kmer=21 min=30\n");
         }
     }
 
@@ -179,7 +184,7 @@ public class Repeater {
         return (Integer.parseInt(r.toString()));
     }
 
-    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean gffshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight) {
+    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean gffshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight, boolean maskpic) {
         try {
             long startTime = System.nanoTime();
             byte[] binaryArray = Files.readAllBytes(Paths.get(infile));
@@ -210,6 +215,7 @@ public class Repeater {
                 s2.SetShowSeq(seqshow);
                 s2.SetFlanks(flanksshow);
                 s2.SetMasked(maskshow);
+                s2.SetMaskedPicture(maskpic);
                 s2.SetGFF(gffshow);
                 s2.SetFileName(infile);
                 if (width > 0 && hight > 0) {

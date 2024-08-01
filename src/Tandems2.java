@@ -44,6 +44,10 @@ public final class Tandems2 {
         flanks = i;
     }
 
+    public void SetMaskedPicture(boolean i) {
+        MaskedPicture = i;
+    }
+
     public void SetShowSeq(boolean i) {
         SeqShow = i;
     }
@@ -88,8 +92,13 @@ public final class Tandems2 {
                     MaskSave(i, u);
                 }
                 bb = new ArrayList<>();
-//                ClusteringMasking2(seq[i], u, 100, 9);
-                ClusteringMasking(u);
+
+                if (MaskedPicture) {
+                    PictureMasking(u);
+                } else {
+                    ClusteringMasking2(seq[i], u, 100, 9);
+                }
+
                 if (bb != null) {
                     if (GFFShow) {
                         GffSave(i);
@@ -273,7 +282,7 @@ public final class Tandems2 {
         return z2;
     }
 
-    private int ClusteringMasking(int[] x1) {
+    private int PictureMasking(int[] x1) {
         int n = x1.length / 2;
         int[][] d = new int[n][2];
         int k = (n / 50 < 10) ? n : n / 50;
@@ -542,6 +551,7 @@ public final class Tandems2 {
     private int gap = 21;
     private boolean SeqShow;
     private boolean MaskedShow;
+    private boolean MaskedPicture;
     private boolean GFFShow;
     private String filePath;
     private String[] seq;
