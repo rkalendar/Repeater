@@ -96,7 +96,7 @@ public final class Tandems2 {
                 if (MaskedPicture) {
                     PictureMasking(u);
                 } else {
-                    ClusteringMasking2(seq[i], u, 100, 9);
+                    ClusteringMasking(seq[i], u, 100, 9);
                 }
 
                 if (bb != null) {
@@ -107,6 +107,31 @@ public final class Tandems2 {
                 }
             }
         }
+    }
+
+    private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
+
+        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, minlenseq, false);
+        int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
+        int[] q = sc.Result();        // cluster ID for each block
+        int ncl = sc.getNcl();
+
+        if (ncl < 1) {
+            return -1;
+        }
+
+        for (int j = 1; j <= ncl; j++) {
+            ArrayList<Integer> z = new ArrayList<>();
+            z.add(0);
+            for (int i = 0; i < q.length; i++) {
+                if (q[i] == j) {
+                    z.add(d[i][0]);
+                    z.add(d[i][1]);
+                }
+            }
+            bb.add(z.stream().mapToInt(Integer::intValue).toArray());
+        }
+        return bb.size();
     }
 
     private int[] Mask(String seq, int kmer, int minlenblock, int minlenseq) {
@@ -310,30 +335,6 @@ public final class Tandems2 {
                 k7[++u] = d[i][1];
             }
             bb.add(k7);
-        }
-        return bb.size();
-    }
-
-    private int ClusteringMasking2(String seq, int[] z2, int similarity, int minlenseq) {
-        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, minlenseq);
-        int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
-        int[] q = sc.Result();        // cluster ID for each block
-        int ncl = sc.getNcl();
-
-        if (ncl < 1) {
-            return -1;
-        }
-
-        for (int j = 1; j <= ncl; j++) {
-            ArrayList<Integer> z = new ArrayList<>();
-            z.add(0);
-            for (int i = 0; i < q.length; i++) {
-                if (q[i] == j) {
-                    z.add(d[i][0]);
-                    z.add(d[i][1]);
-                }
-            }
-            bb.add(z.stream().mapToInt(Integer::intValue).toArray());
         }
         return bb.size();
     }

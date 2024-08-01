@@ -1,10 +1,11 @@
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public final class SequencesClustering {
 
-    public SequencesClustering(String s, int[] x, int sim, int kmer) {
+    public SequencesClustering(String s, int[] x, int sim, int kmer, boolean slow) {
         if (sim < 60) {
             sim = 60;
         }
@@ -16,8 +17,11 @@ public final class SequencesClustering {
         }
         this.sim = sim;
         nseq = x.length / 2;
-        ncl = ClusteringPattern(s, x);
-        //  ncl = ClusteringSlow(s, kmer, x);
+        if (slow) {
+            ncl = ClusteringSlow(s, kmer, x);
+        } else {
+            ncl = ClusteringPattern(s, x);
+        }
     }
 
     private int ClusteringPattern(String seq, int[] x1) {
@@ -183,7 +187,7 @@ public final class SequencesClustering {
                             if (m2.contains(s)) {
                                 r++;
                             }
-                            s = dna.ComplementDNA2(s);//s = a.substring(i, i + kmer);
+                            s = dna.ComplementDNA2(s);
                             if (m2.contains(s)) {
                                 r++;
                             }
