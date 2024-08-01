@@ -30,7 +30,7 @@ public class Repeater {
             if (s.contains("mask=false")) {
                 maskshow = false;
             }
-            if (s.contains("maskpic=false")) {
+            if (s.contains("maskpic=true")) {
                 maskpicture = true;
             }
             if (s.contains("gff=false")) {
