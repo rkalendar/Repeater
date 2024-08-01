@@ -76,13 +76,11 @@ public final class SequencesClustering {
             for (int i = 0; i < d[j][1] - kmer + 1; i++) {
                 String s = seq.substring(d[j][0] + i, d[j][0] + i + kmer);
                 if (pt.containsKey(s)) {
-                    int p = pt.get(s);
-                    m2[j][p]++;
+                    m2[j][pt.get(s)]++;
                 }
                 s = dna.ComplementDNA2(s);
                 if (pt.containsKey(s)) {
-                    int p = pt.get(s);
-                    m2[j][p]++;
+                    m2[j][pt.get(s)]++;
                 }
             }
         }
@@ -111,34 +109,37 @@ public final class SequencesClustering {
                         }
 
                         int v = 0;
+                        int z = 0;
                         for (int k = 1; k < 1 + m[0]; k++) {
                             for (int y = k + 1; y < 1 + m[0]; y++) {
-                                double di = 1;
-                                double dj = 1;
+                                double di = 0;
+                                double dj = 0;
+                                z++;
                                 if (m2[i][m[k]] < m2[i][m[y]]) {
                                     di = (double) m2[i][m[k]] / m2[i][m[y]];
                                     dj = (double) m2[j][m[k]] / m2[j][m[y]];
                                 } else {
-                                    di = m2[i][m[y]] / m2[i][m[k]];
-                                    dj = m2[j][m[y]] / m2[j][m[k]];
+                                    di = (double) m2[i][m[y]] / m2[i][m[k]];
+                                    dj = (double) m2[j][m[y]] / m2[j][m[k]];
+                                }
+                                if (di == dj) {
+                                    v++;
                                 }
                                 if (di > dj) {
-                                    v++;
-                                    if (di <= dj + (dj * 0.3)) {
-                                        v++;
-                                    }
-                                } else {
-                                    if (di == dj) {
-                                        v++;
-                                    }
-                                    if (dj <= di + (di * 0.3)) {
+                                    if (di <= dj + (dj * dif)) {
                                         v++;
                                     }
                                 }
+                                if (di < dj) {
+                                    if (dj <= di + (di * dif)) {
+                                        v++;
+                                    }
+                                }
+
                             }
-                        }
-                        if (v == m[0] - 1) {
-                            cx[j] = n;
+                            if (v > 0 && v + (v * dif) > z) {
+                                cx[j] = n;
+                            }
                         }
                     }
                 }
@@ -215,6 +216,7 @@ public final class SequencesClustering {
         return d;
     }
     private final int nseq;
+    private final double dif = 0.4d;
     private final int sim;
     private final int ncl;
     private int[] cx;
