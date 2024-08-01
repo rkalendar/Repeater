@@ -438,8 +438,8 @@ public final class Tandems2 {
     private void PictureSave(int n, int dw, int dh) throws IOException {
         int b = bb.size();
         int z = 20;          // step between clusters
-        if (b > 300) {
-            b = 300;
+        if (b > 500) { // maximum 500 clusters 
+            b = 500;
         }
         if (b > 50) {
             z = 10;
@@ -452,10 +452,7 @@ public final class Tandems2 {
         }
 
         int l = seq[n].length();
-        int width = l < 10_000_000 ? l / 200 : 50000;
-        //int width =  /l > 5_000_000 ? 100000 : l / 50;  
-        //int width = l < 5_000_000 ? l / 250 : 5_000 + (l - 5_000) / 250;
-
+        int width = l < 80_000_000 ? l / 200 : 40000;
         if (dw > 0) {
             width = dw;
         }
