@@ -1,4 +1,5 @@
 
+import java.util.Arrays;
 import java.awt.BasicStroke;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -87,8 +88,8 @@ public final class Tandems2 {
                     MaskSave(i, u);
                 }
                 bb = new ArrayList<>();
-                ClusteringMasking(seq[i], u, 100, 9);
-
+//                ClusteringMasking2(seq[i], u, 100, 9);
+                ClusteringMasking(u);
                 if (bb != null) {
                     if (GFFShow) {
                         GffSave(i);
@@ -272,7 +273,31 @@ public final class Tandems2 {
         return z2;
     }
 
-    private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
+    private int ClusteringMasking(int[] x1) {
+        int n = x1.length / 2;;
+        int[][] d = new int[n][2];
+
+        for (int j = 0; j < n; j++) {
+            int p = j * 2;
+            d[j][0] = x1[p];
+            d[j][1] = x1[p + 1] - x1[p];
+        }
+        Arrays.sort(d, (int[] a, int[] b) -> {
+            return Integer.compare(b[1], a[1]);
+        });
+
+        for (int j = 0; j < n; j++) {
+            int[] k7 = new int[3];
+            k7[0] = 2;
+            k7[1] = d[j][0];
+            k7[2] = d[j][1];
+
+            bb.add(k7);
+        }
+        return bb.size();
+    }
+
+    private int ClusteringMasking2(String seq, int[] z2, int similarity, int minlenseq) {
         SequencesClustering sc = new SequencesClustering(seq, z2, similarity, minlenseq);
         int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
         int[] q = sc.Result();        // cluster ID for each block
@@ -501,7 +526,7 @@ public final class Tandems2 {
     private int nseq = 0;
     private int iwidth = 0;
     private int iheight = 0;
-    private int similarity = 70;
+    private int similarity = 80;
     private int minlenblock = 30;   // repeat length user control  
     private int minlenseq = 50;     // sequence length 
     private int kmerln = 21;
