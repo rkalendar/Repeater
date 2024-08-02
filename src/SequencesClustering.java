@@ -1,30 +1,29 @@
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public final class SequencesClustering {
 
-    public SequencesClustering(String s, int[] x, int sim, int kmer, boolean slow) {
-        if (sim < 60) {
-            sim = 60;
+    public SequencesClustering(String seq, int[] x) {
+        int nseq = x.length / 2;
+        if (nseq < 1) {
+            return;
         }
-        if (kmer < 12) {
-            kmer = 12;
+
+        d = new int[nseq][2];
+        for (int j = 0; j < nseq; j++) {
+            int p = j * 2;
+            d[j][0] = x[p];
+            d[j][1] = x[p + 1] - x[p];
         }
-        if (kmer > 99) {
-            kmer = 99;
-        }
-        this.sim = sim;
-        nseq = x.length / 2;
-        if (slow) {
-            ncl = ClusteringSlow(s, kmer, x);
-        } else {
-            ncl = ClusteringPattern(s, x);
-        }
+        Arrays.sort(d, (int[] a, int[] b) -> {
+            return Integer.compare(b[1], a[1]);
+        });
+
+        ncl = Clustering(seq, nseq);
     }
 
-    private int ClusteringPattern(String seq, int[] x1) {
+    private int Clustering(String seq, int nseq) {
         HashMap<String, Integer> pt = new HashMap<>();
         pt.put("aaatt", 0);
         pt.put("aagtt", 1);
@@ -58,17 +57,37 @@ public final class SequencesClustering {
         pt.put("gtgac", 29);
         pt.put("gcagc", 30);
         pt.put("gcggc", 31);
+        pt.put("aaatc", 32);
+        pt.put("aagtc", 33);
+        pt.put("ccagt", 34);
+        pt.put("acgga", 35);
+        pt.put("agaca", 36);
+        pt.put("atatc", 37);
+        pt.put("atgct", 38);
+        pt.put("cagac", 39);
+        pt.put("ccata", 40);
+        pt.put("ccgat", 41);
+        pt.put("cgaac", 42);
+        pt.put("cgaat", 43);
+        pt.put("ctaac", 44);
+        pt.put("ctttc", 45);
+        pt.put("gaccg", 46);
+        pt.put("gaccc", 47);
+        pt.put("gccat", 48);
+        pt.put("gcgca", 49);
+        pt.put("ggtta", 50);
+        pt.put("ggcat", 51);
+        pt.put("gtatt", 52);
+        pt.put("gtgga", 53);
+        pt.put("tacac", 54);
+        pt.put("taggc", 55);
+        pt.put("tcaaa", 56);
+        pt.put("tcgcc", 57);
+        pt.put("tggat", 58);
+        pt.put("tgtta", 59);
+        pt.put("ttacc", 60);
+        pt.put("ttggt", 61);
 
-        d = new int[nseq][2];
-        for (int j = 0; j < nseq; j++) {
-            int p = j * 2;
-            d[j][0] = x1[p];
-            d[j][1] = x1[p + 1] - x1[p];
-        }
-        Arrays.sort(d, (int[] a, int[] b) -> {
-            return Integer.compare(b[1], a[1]);
-        });
-        
         int nkmers = pt.size();
         int kmer = 5;
         int[][] m2 = new int[nseq][nkmers];
@@ -116,11 +135,11 @@ public final class SequencesClustering {
                                 double di, dj;
                                 z++;
                                 if (m2[i][m[k]] < m2[i][m[y]]) {
-                                    di = (double) m2[i][m[k]] / m2[i][m[y]];
-                                    dj = (double) m2[j][m[k]] / m2[j][m[y]];
+                                    di = (double) (100 * m2[i][m[k]]) / m2[i][m[y]];
+                                    dj = (double) (100 * m2[j][m[k]]) / m2[j][m[y]];
                                 } else {
-                                    di = (double) m2[i][m[y]] / m2[i][m[k]];
-                                    dj = (double) m2[j][m[y]] / m2[j][m[k]];
+                                    di = (double) (100 * m2[i][m[y]]) / m2[i][m[k]];
+                                    dj = (double) (100 * m2[j][m[y]]) / m2[j][m[k]];
                                 }
                                 if (di == dj) {
                                     v++;
@@ -147,62 +166,6 @@ public final class SequencesClustering {
         return n;
     }
 
-    private int ClusteringSlow(String seq, int kmer, int[] x1) {
-        int n = 0;
-        cx = new int[nseq];      // clusters   
-        d = new int[nseq][2];
-        for (int j = 0; j < nseq; j++) {
-            int p = j * 2;
-            d[j][0] = x1[p];
-            d[j][1] = x1[p + 1] - x1[p];
-        }
-        Arrays.sort(d, (int[] a, int[] b) -> {
-            return Integer.compare(b[1], a[1]);
-        });
-
-        for (int j = 0; j < nseq; j++) {
-            if (cx[j] == 0) {
-                HashSet<String> m2 = new HashSet<>();
-                n++;
-                cx[j] = n;
-                for (int i = 0; i < d[j][1] - kmer + 1; i++) {
-                    String s = seq.substring(d[j][0] + i, d[j][0] + i + kmer);
-                    if (m2.contains(s)) {
-                    } else {
-                        m2.add(s);
-                    }
-                    s = dna.ComplementDNA2(s);
-                    if (m2.contains(s)) {
-                    } else {
-                        m2.add(s);
-                    }
-                }
-
-// compare            
-                for (int k = j + 1; k < nseq; k++) {
-                    if (cx[k] == 0) {
-                        int r = 0;
-                        for (int i = 0; i < d[k][1] - kmer + 1; i++) {
-                            String s = seq.substring(d[k][0] + i, d[k][0] + i + kmer);
-                            if (m2.contains(s)) {
-                                r++;
-                            }
-                            s = dna.ComplementDNA2(s);
-                            if (m2.contains(s)) {
-                                r++;
-                            }
-                        }
-                        int v = (100 * r) / d[k][1];
-                        if (v > sim) {
-                            cx[k] = n;
-                        }
-                    }
-                }
-            }
-        }
-        return n;
-    }
-
     public int getNcl() {
         return ncl;
     }
@@ -214,10 +177,9 @@ public final class SequencesClustering {
     public int[][] ResultArray() {
         return d;
     }
-    private final int nseq;
-    private final double dif = 0.4d;
-    private final int sim;
-    private final int ncl;
+
+    private final double dif = 0.3d;
+    private int ncl;
     private int[] cx;
     private int[][] d;
 }

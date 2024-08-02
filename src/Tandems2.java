@@ -24,9 +24,9 @@ public final class Tandems2 {
         filePath = a;
     }
 
-    public void SetRepeatLen(int kmer, int minlen, int minseq) {
+    public void SetRepeatLen(int kmer, int minlen, int minseq, int g) {
         kmerln = kmer;
-        gap = kmer;
+        gap = g;
         minlenblock = minlen;
         minlenseq = minseq;
         if (kmerln < 12) {
@@ -96,7 +96,7 @@ public final class Tandems2 {
                 if (MaskedPicture) {
                     PictureMasking(u);
                 } else {
-                    ClusteringMasking(seq[i], u, 100, 9);
+                    ClusteringMasking(seq[i], u);
                 }
 
                 if (bb != null) {
@@ -109,9 +109,9 @@ public final class Tandems2 {
         }
     }
 
-    private int ClusteringMasking(String seq, int[] z2, int similarity, int minlenseq) {
+    private int ClusteringMasking(String seq, int[] z2) {
 
-        SequencesClustering sc = new SequencesClustering(seq, z2, similarity, minlenseq, false);
+        SequencesClustering sc = new SequencesClustering(seq, z2);
         int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
         int[] q = sc.Result();        // cluster ID for each block
         int ncl = sc.getNcl();
@@ -135,10 +135,10 @@ public final class Tandems2 {
     }
 
     private int[] Mask(String seq, int kmer, int minlenblock, int minlenseq) {
-        int l = seq.length();
-        String aseq = dna.ComplementDNA(seq);
         HashMap<String, Integer> map = new HashMap<>();
-
+        String aseq = dna.ComplementDNA(seq);
+        
+        int l = seq.length();
         int[] ax = new int[kmer];
         int[] bx = new int[5];
 
@@ -541,7 +541,6 @@ public final class Tandems2 {
     private int nseq = 0;
     private int iwidth = 0;
     private int iheight = 0;
-    private int similarity = 80;
     private int minlenblock = 30;   // repeat length user control  
     private int minlenseq = 50;     // sequence length 
     private int kmerln = 21;

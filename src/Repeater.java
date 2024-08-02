@@ -10,9 +10,10 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 21; //quick ideal 21-30-60 
+            int kmer = 21;   //quick ideal 21-30-60...100, gap=kmer 
             int minlen = 30;
             int seqlen = 60;
+            int gap = kmer;
             int width = 0;
             int hight = 0;
             int flanksshow = 0;
@@ -91,7 +92,13 @@ public class Repeater {
                     seqlen = minlen;
                 }
             }
-
+            if (s.contains("gap=")) {
+                int j = s.indexOf("gap=");
+                int x = s.indexOf(" ", j);
+                if (x > j) {
+                    gap = StrToInt(s.substring(j + 4, x));
+                }
+            }
             if (s.contains("image=")) { // image=10000x3000
                 int j = s.indexOf("image=");
                 int x = s.indexOf(" ", j);
@@ -127,14 +134,14 @@ public class Repeater {
                     }
                     for (String nfile : filelist) {
                         try {
-                            SaveResult(nfile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
+                            SaveResult(nfile, kmer, minlen, seqlen, gap, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
                         } catch (Exception e) {
                             System.err.println("Failed to open file: " + nfile);
                         }
                     }
 
                 } else {
-                    SaveResult(infile, kmer, minlen, seqlen, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
+                    SaveResult(infile, kmer, minlen, seqlen, gap, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
                 }
             }
 
@@ -184,7 +191,7 @@ public class Repeater {
         return (Integer.parseInt(r.toString()));
     }
 
-    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int flanksshow, boolean quickshow, boolean gffshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight, boolean maskpic) {
+    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int gap, int flanksshow, boolean quickshow, boolean gffshow, boolean maskshow, boolean seqshow, boolean ssrrun, int width, int hight, boolean maskpic) {
         try {
             long startTime = System.nanoTime();
             byte[] binaryArray = Files.readAllBytes(Paths.get(infile));
@@ -211,7 +218,7 @@ public class Repeater {
             if (quickshow) {
                 Tandems2 s2 = new Tandems2();
                 s2.SetSequences(rf.getSequences(), rf.getNames());
-                s2.SetRepeatLen(kmer, minlen, seqlen);
+                s2.SetRepeatLen(kmer, minlen, seqlen, gap);
                 s2.SetShowSeq(seqshow);
                 s2.SetFlanks(flanksshow);
                 s2.SetMasked(maskshow);
