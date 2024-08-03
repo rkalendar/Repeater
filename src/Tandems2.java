@@ -283,7 +283,6 @@ public final class Tandems2 {
             }
         }
 
-        u = new int[0]; // clear array
         int n = 0;
         for (int i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
@@ -292,18 +291,18 @@ public final class Tandems2 {
                 n += 2;
             }
         }
-        int[] z2 = new int[n];   //x1-x2 block
+        u = new int[n];   //x1-x2 block
         n = -1;
         for (int i = 0; i < z.size(); i += 2) {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) { // join blocks at short distance
-                z2[++n] = x1;
-                z2[++n] = x2;
+                u[++n] = x1;
+                u[++n] = x2;
                 repeatslen = repeatslen + (x2 - x1 + 1);
             }
         }
-        return z2;
+        return u;
     }
 
     private int PictureMasking(int[] x1) {
