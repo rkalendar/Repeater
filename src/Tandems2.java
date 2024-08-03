@@ -78,32 +78,31 @@ public final class Tandems2 {
             if (l > minlenseq) {
                 startTime = System.nanoTime();
                 int[] u = Mask(seq[i], kmerln, minlenblock, minlenseq);
-                if (u.length < 2) {
-                    return;
-                }
-                repeatslen = (repeatslen * 100) / (l - reallen);
-                gaps = (reallen / l) * 100;
+                if (u.length > 1) {
+                    repeatslen = (repeatslen * 100) / (l - reallen);
+                    gaps = (reallen / l) * 100;
 
-                System.out.println("Target sequence length = " + l + " nt");
-                System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
+                    System.out.println("Target sequence length = " + l + " nt");
+                    System.out.println("Sequence coverage by repeats =" + String.format("%.3f", repeatslen) + "%");
+                    System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
 
-                if (MaskedShow) {
-                    MaskSave(i, u);
-                }
-                bb = new ArrayList<>();
-
-                if (MaskedPicture) {
-                    PictureMasking(u);
-                } else {
-                    ClusteringMasking(seq[i], u);
-                }
-
-                if (bb != null) {
-                    if (GFFShow) {
-                        GffSave(i);
+                    if (MaskedShow) {
+                        MaskSave(i, u);
                     }
-                    PictureSave(i, iwidth, iheight);
+                    bb = new ArrayList<>();
+
+                    if (MaskedPicture) {
+                        PictureMasking(u);
+                    } else {
+                        ClusteringMasking(seq[i], u);
+                    }
+
+                    if (bb != null) {
+                        if (GFFShow) {
+                            GffSave(i);
+                        }
+                        PictureSave(i, iwidth, iheight);
+                    }
                 }
             }
         }
@@ -359,7 +358,7 @@ public final class Tandems2 {
                     c[i] = (byte) (c[i] - 32);
                 }
             }
-            fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.2f", repeatslen) + "%\n");
+            fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.3f", repeatslen) + "%\n");
             fileWriter.write(new String(c));
         }
     }
