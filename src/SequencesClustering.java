@@ -112,8 +112,8 @@ public final class SequencesClustering {
 
                 for (int j = i + 1; j < nseq; j++) {
                     if (cx[j] == 0) {
+                        
                         int[] m = new int[nkmers + 1];
-
                         for (int k = 0; k < nkmers; k++) {
                             if (m2[i][k] > 0 && m2[j][k] > 0) {
                                 if (m[0] == 0) {
@@ -176,8 +176,8 @@ public final class SequencesClustering {
         return d;
     }
 
-    private final double dif = 0.3d;
+    private final double dif = 0.4d; //Dispersion 
     private int ncl;
     private int[] cx;
-    private int[][] d;
+    private int[][] d; 
 }

@@ -10,7 +10,7 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 21;   //quick ideal 21-30-60...100, gap=kmer 
+            int kmer = 21;     //quick seqrch: ideal 21-30-60...100, gap=kmer 
             int minlen = 30;
             int seqlen = 60;
             int gap = kmer;
@@ -99,7 +99,7 @@ public class Repeater {
                     gap = StrToInt(s.substring(j + 4, x));
                 }
             }
-            if (s.contains("image=")) { // image=10000x3000
+            if (s.contains("image=")) { // image=40000x5000
                 int j = s.indexOf("image=");
                 int x = s.indexOf(" ", j);
                 if (x > j) {
@@ -139,7 +139,6 @@ public class Repeater {
                             System.err.println("Failed to open file: " + nfile);
                         }
                     }
-
                 } else {
                     SaveResult(infile, kmer, minlen, seqlen, gap, flanksshow, quickshow, gffshow, maskshow, seqshow, ssrrun, width, hight, maskpicture);
                 }
@@ -154,6 +153,7 @@ public class Repeater {
             System.out.println("min=100\tinitial repeat length (default min=25), it can be equal to 'kmer'");
             System.out.println("sln=150\tstring length (default sln=50), it can be equal to 'min'");
             System.out.println("flangs=100\textend the flanks of the repeat with an appropriate length (100 nt) (default flangs=0)");
+            System.out.println("gap=12\t maximum distance between repeat blocks (default gap=kmer)");
             System.out.println("image=10000x3000\t (by default, the dimensionality of the image is automatically determined)");
             System.out.println("mask=true/false\tquick generation a new file with masking repeats (default mask=true)");
             System.out.println("maskpic=true/false\tgenerate a image file with masking repeats (default maskpic=false)");

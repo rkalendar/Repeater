@@ -137,7 +137,7 @@ public final class Tandems2 {
     private int[] Mask(String seq, int kmer, int minlenblock, int minlenseq) {
         HashMap<String, Integer> map = new HashMap<>();
         String aseq = dna.ComplementDNA(seq);
-        
+
         int l = seq.length();
         int[] ax = new int[kmer];
         int[] bx = new int[5];
@@ -437,9 +437,9 @@ public final class Tandems2 {
 
     private void PictureSave(int n, int dw, int dh) throws IOException {
         int b = bb.size();
-        int z = 20;          // step between clusters
-        if (b > 500) { // maximum 500 clusters 
-            b = 500;
+        int z = 20;      // step between clusters
+        if (b > 1000) {  // maximum 1000 clusters 
+            b = 1000;
         }
         if (b > 50) {
             z = 10;
@@ -450,14 +450,17 @@ public final class Tandems2 {
         if (b > 250) {
             z = 8;
         }
+        if (b > 500) {
+            z = 7;
+        }
 
         int l = seq[n].length();
-        int width = l < 80_000_000 ? l / 200 : 40000;
+        int width = l < 80_000_000 ? l / 200 : 40_000;
         if (dw > 0) {
             width = dw;
         }
-        if (width > 46340) { //too big a picture leads to an error  
-            width = 46340; //https://jobcardsystems.com/index.php/blog/29-effective-handling-of-big-images-in-java
+        if (width > 40_000) { //46_340 too big a picture leads to an error  
+            width = 40_000; //https://jobcardsystems.com/index.php/blog/29-effective-handling-of-big-images-in-java
         }
         if (width < 1000) {
             width = 1000;
