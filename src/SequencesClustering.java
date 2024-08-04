@@ -57,6 +57,36 @@ public final class SequencesClustering {
         pt.put("gtgac", 29);
         pt.put("gcagc", 30);
         pt.put("gcggc", 31);
+        pt.put("aaatc", 32);
+        pt.put("aagtc", 33);
+        pt.put("ccagt", 34);
+        pt.put("acgga", 35);
+        pt.put("agaca", 36);
+        pt.put("atatc", 37);
+        pt.put("atgct", 38);
+        pt.put("cagac", 39);
+        pt.put("ccata", 40);
+        pt.put("ccgat", 41);
+        pt.put("cgaac", 42);
+        pt.put("cgaat", 43);
+        pt.put("ctaac", 44);
+        pt.put("ctttc", 45);
+        pt.put("gaccg", 46);
+        pt.put("gaccc", 47);
+        pt.put("gccat", 48);
+        pt.put("gcgca", 49);
+        pt.put("ggtta", 50);
+        pt.put("ggcat", 51);
+        pt.put("gtatt", 52);
+        pt.put("gtgga", 53);
+        pt.put("tacac", 54);
+        pt.put("taggc", 55);
+        pt.put("tcaaa", 56);
+        pt.put("tcgcc", 57);
+        pt.put("tggat", 58);
+        pt.put("tgtta", 59);
+        pt.put("ttacc", 60);
+        pt.put("ttggt", 61);
 
         int nkmers = pt.size();
         int kmer = 5;
@@ -100,7 +130,7 @@ public final class SequencesClustering {
 
                         int v = 0; // practice matches 
                         int z = 0; // theoretically maximum possible matches  
-                        for (int k = 1; k < 1 + m[0]; k++) {
+                        for (int k = 1; k < m[0]; k++) {
                             for (int y = k + 1; y < 1 + m[0]; y++) {
                                 double di, dj;
                                 z++;
@@ -126,11 +156,11 @@ public final class SequencesClustering {
                                 }
                             }
                         }
-                        
+
                         if (v > 0 && ((100 * v) / z) > sim) {
                             cx[j] = n;
                         }
-                        
+
                     }
                 }
             }
