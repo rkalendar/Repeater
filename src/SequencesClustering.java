@@ -155,9 +155,13 @@ public final class SequencesClustering {
                                     }
                                 }
                             }
+
+                            if (v > 12 && ((100 * v) / z) > sim) {
+                                break;
+                            }
                         }
 
-                        if (v > 0 && ((100 * v) / z) > sim) {
+                        if (v > 1 && ((100 * v) / z) > sim) {
                             cx[j] = n;
                         }
 
