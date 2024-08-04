@@ -10,7 +10,7 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 21;     //quick seqrch: ideal 21-30-60...100, gap=kmer 
+            int kmer = 21;     //quick search: optimal rules: kmer=21-minlen=30-seqlen=60...100, gap=kmer 
             int minlen = 30;
             int seqlen = 60;
             int gap = kmer;
@@ -242,7 +242,7 @@ public class Repeater {
                     s2.SetImage(width, hight);
                 }
                 if (ssrrun) {
-                    System.out.println("SSR analysis is running.");
+                    System.out.println("SSR analysis is running.\n");
                     s2.SetTelomers(true);
                     s2.RunSSR();
                 } else {
@@ -250,9 +250,9 @@ public class Repeater {
                 }
             }
             long duration = (System.nanoTime() - startTime) / 1000000000;
-            System.out.println("Time taken: " + duration + " seconds");
+            System.out.println("Time taken: " + duration + " seconds\n");
         } catch (IOException e) {
-            System.out.println("Incorrect file name.");
+            System.out.println("Incorrect file name.\n");
         }
     }
 }
