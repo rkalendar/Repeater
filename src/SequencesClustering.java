@@ -4,10 +4,16 @@ import java.util.HashMap;
 
 public final class SequencesClustering {
 
-    public SequencesClustering(String seq, int[] x) {
+    public SequencesClustering(String seq, int[] x, int similarity) {
         int nseq = x.length / 2;
         if (nseq < 1) {
             return;
+        }
+        if (similarity < 60) {
+            similarity = 60;
+        }
+        if (similarity > 80) {
+            similarity = 80;
         }
 
         d = new int[nseq][2];
@@ -20,10 +26,10 @@ public final class SequencesClustering {
             return Integer.compare(b[1], a[1]);
         });
 
-        ncl = Clustering(seq, nseq);
+        ncl = Clustering(seq, nseq, similarity);
     }
 
-    private int Clustering(String seq, int nseq) {
+    private int Clustering(String seq, int nseq, int sim) {
         HashMap<String, Integer> pt = new HashMap<>();
         pt.put("aaatt", 0);
         pt.put("aagtt", 1);
@@ -155,8 +161,7 @@ public final class SequencesClustering {
                                     }
                                 }
                             }
-
-                            if (v > 12 && ((100 * v) / z) > sim) {
+                            if (v > 121) {
                                 break;
                             }
                         }
@@ -185,7 +190,6 @@ public final class SequencesClustering {
     }
 
     private final double dif = 0.4d; //Dispersion 
-    private final int sim = 70;      //Similarity
     private int ncl;
     private int[] cx;
     private int[][] d;

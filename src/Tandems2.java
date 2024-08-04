@@ -94,7 +94,7 @@ public final class Tandems2 {
                     if (MaskedPicture) {
                         PictureMasking(u);
                     } else {
-                        ClusteringMasking(seq[i], u);
+                        ClusteringMasking(seq[i], u, sim);
                     }
 
                     if (bb != null) {
@@ -108,9 +108,9 @@ public final class Tandems2 {
         }
     }
 
-    private int ClusteringMasking(String seq, int[] z2) {
+    private int ClusteringMasking(String seq, int[] z2, int sim) {
 
-        SequencesClustering sc = new SequencesClustering(seq, z2);
+        SequencesClustering sc = new SequencesClustering(seq, z2, sim);
         int[][] d = sc.ResultArray(); // d[j][0] = x1; d[j][1] = length;
         int[] q = sc.Result();        // cluster ID for each block
         int ncl = sc.getNcl();
@@ -547,6 +547,7 @@ public final class Tandems2 {
     private int kmerln = 21;
     private int flanks = 20;
     private int gap = 21;
+    private final int sim = 70;
     private boolean SeqShow;
     private boolean MaskedShow;
     private boolean MaskedPicture;
