@@ -80,10 +80,10 @@ public final class Tandems2 {
                 int[] u = Mask(seq[i], kmerln, minlenblock, minlenseq);
                 if (u.length > 1) {
                     repeatslen = (repeatslen * 100) / (l - reallen);
-                    gaps = (reallen / l) * 100;
+                    gaps = (reallen * 100) / l;
 
                     System.out.println("Target sequence length = " + l + " nt");
-                    System.out.println("Sequence coverage by repeats =" + String.format("%.3f", repeatslen) + "%");
+                    System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
                     System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
 
                     if (MaskedShow) {
@@ -357,7 +357,7 @@ public final class Tandems2 {
                     c[i] = (byte) (c[i] - 32);
                 }
             }
-            fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.3f", repeatslen) + "%\n");
+            fileWriter.write(">" + sname[n] + " Sequence coverage by repeats = " + String.format("%.2f", repeatslen) + "%\n");
             fileWriter.write(new String(c));
         }
     }
@@ -457,7 +457,7 @@ public final class Tandems2 {
         if (dw > 0) {
             width = dw;
         }
-        if (width > 40_000) { //46_340 too big a picture leads to an error  
+        if (width > 40_000) { //46_340 too big a picture leads to an error   2,147,483,647 pixels (or 46,340 x 46,340 pixels). 
             width = 40_000; //https://jobcardsystems.com/index.php/blog/29-effective-handling-of-big-images-in-java
         }
         if (width < 1000) {
@@ -467,8 +467,8 @@ public final class Tandems2 {
         if (dh > 0) {
             height = dh;
         }
-        if (height > 46340) {
-            height = 46340;
+        if (height > 40_000) {
+            height = 40_000;
         }
         if (height < 100) {
             height = 100;
