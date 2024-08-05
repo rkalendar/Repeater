@@ -161,7 +161,7 @@ public final class SequencesClustering {
                                     }
                                 }
                             }
-                            if (v > 121) {
+                            if (z > 121 ) {
                                 break;
                             }
                         }

@@ -94,6 +94,7 @@ public final class Tandems2 {
                     if (MaskedPicture) {
                         PictureMasking(u);
                     } else {
+                        System.out.println("Clustering started...");
                         ClusteringMasking(seq[i], u, sim);
                     }
 
@@ -547,7 +548,7 @@ public final class Tandems2 {
     private int kmerln = 21;
     private int flanks = 20;
     private int gap = 21;
-    private final int sim = 70;
+    private final int sim = 50;
     private boolean SeqShow;
     private boolean MaskedShow;
     private boolean MaskedPicture;
