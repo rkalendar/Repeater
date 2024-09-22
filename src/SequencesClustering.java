@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -15,10 +14,9 @@ public final class SequencesClustering {
     private int[] cx;   // Cluster mapping for sequences
     private int[][] d;  // Sequence ranges (start and length)
 
-    private static final String[] KMERS = {"aatt", "acgt", "agct", "ttaa", "tgca", "tcga", "ccgg", "catg", "ctag", "ggcc", "gatc", "gtac"};
-
-    /*
     private static final String[] KMERS = {
+        "aatt", "acgt", "agct", "ttaa", "tgca", "tcga", "ccgg", "catg", "ctag", "ggcc", "gatc", "gtac"
+    /*     
         "aatc", "aatg", "aact", "aacg", "aagt", "aagc", "atac", "atag", "attc", "attg",
         "atca", "atct", "atcc", "atcg", "atga", "atgt", "atgc", "atgg", "acat", "acag",
         "acta", "actt", "actc", "actg", "acct", "accg", "acga", "acgc", "acgg", "agat",
@@ -35,8 +33,9 @@ public final class SequencesClustering {
         "gagc", "gtaa", "gtat", "gtag", "gtta", "gttc", "gtca", "gtct", "gtcc", "gtcg",
         "gtga", "gtgc", "gcaa", "gcat", "gcac", "gcag", "gcta", "gctt", "gctc", "gctg",
         "gcca", "gcct", "gcga", "gcgt", "ggat", "ggac", "ggta", "ggtc", "ggca", "ggct"
-    };
      */
+    };
+
     public SequencesClustering(String seq, int[] x, int similarity) {
         int nseq = x.length / 2;
         if (nseq < 1) {
@@ -121,18 +120,15 @@ public final class SequencesClustering {
 
             for (int i = 0; i < sequenceLength - KMER_LENGTH + 1; i++) {
                 String s = seq.substring(sequenceStart + i, sequenceStart + i + KMER_LENGTH);
-
                 if (pt.containsKey(s)) {
                     m2[j][pt.get(s)]++;
                 }
-
-                String complement = dna.ComplementDNA2(s);
-                if (pt.containsKey(complement)) {
-                    m2[j][pt.get(complement)]++;
-                }
+                //       String complement = dna.ComplementDNA2(s);
+                //      if (pt.containsKey(complement)) {
+                //         m2[j][pt.get(complement)]++;
+                //     }
             }
         }
-
         return m2;
     }
 
