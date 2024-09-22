@@ -1,3 +1,4 @@
+
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -14,6 +15,9 @@ public final class SequencesClustering {
     private int[] cx;   // Cluster mapping for sequences
     private int[][] d;  // Sequence ranges (start and length)
 
+    private static final String[] KMERS = {"aatt", "acgt", "agct", "ttaa", "tgca", "tcga", "ccgg", "catg", "ctag", "ggcc", "gatc", "gtac"};
+
+    /*
     private static final String[] KMERS = {
         "aatc", "aatg", "aact", "aacg", "aagt", "aagc", "atac", "atag", "attc", "attg",
         "atca", "atct", "atcc", "atcg", "atga", "atgt", "atgc", "atgg", "acat", "acag",
@@ -32,7 +36,7 @@ public final class SequencesClustering {
         "gtga", "gtgc", "gcaa", "gcat", "gcac", "gcag", "gcta", "gctt", "gctc", "gctg",
         "gcca", "gcct", "gcga", "gcgt", "ggat", "ggac", "ggta", "ggtc", "ggca", "ggct"
     };
-
+     */
     public SequencesClustering(String seq, int[] x, int similarity) {
         int nseq = x.length / 2;
         if (nseq < 1) {
