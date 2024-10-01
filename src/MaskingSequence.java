@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 public class MaskingSequence {
 
-    private long reallen = 0;
+    private long gapslen = 0;
     private long repeatslen = 0;
 
     public int[] Mask(String seq, byte[] ssrmsk, int kmer, int minlenseq) {
@@ -79,12 +79,12 @@ public class MaskingSequence {
         byte b[] = seq.getBytes();
         byte c[] = aseq.getBytes();
 
-        reallen = 0;
+        gapslen = 0;
         for (int i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];
             c[i] = tables.dx2[c[i]];
             if (b[i] == 4) {
-                reallen++;
+                gapslen++;
             }
         }
 
@@ -187,8 +187,8 @@ public class MaskingSequence {
         return u;
     }
 
-    public long ReallSeqLength() {
-        return reallen;
+    public long GapsLength() {
+        return gapslen;
     }
 
     public long RepeatLength() {
