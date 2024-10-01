@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ public class Repeater {
             String s = String.join(" ", args).toLowerCase() + " ";
             int kmer = 19;     //quick search: optimal rules: kmer=19-21 seqlen=30...100, gap=kmer kmer=12-18 for short seqyences
             int minlen = 30;
-            int seqlen = 90;
+            int seqlen = 60;
             int gap = kmer;
             int width = 0;
             int hight = 0;
@@ -39,9 +40,11 @@ public class Repeater {
             if (s.contains("seqshow=true")) {
                 seqshow = true;
             }
+
             if (s.contains("quick=false")) {
                 quickshow = false;
             }
+           // quickshow = false;
             if (s.contains("ssr=true")) {
                 ssrrun = true;
                 quickshow = false;
@@ -218,7 +221,7 @@ public class Repeater {
                 System.out.println("Flanks around sequence is " + flanksshow);
             }
 
-            //  quickshow = false;
+            // quickshow = false;
             //    ssrrun = true;
             if (quickshow) {
                 QuickRepeatsSearching s2 = new QuickRepeatsSearching();

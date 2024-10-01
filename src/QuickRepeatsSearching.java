@@ -71,6 +71,8 @@ public final class QuickRepeatsSearching {
         for (int i = 0; i < nseq; i++) {
             int l = seq[i].length();
             repeatslen = 0;
+            reallen = 0;
+            bb = new ArrayList<>();
 
             if (l > minlenseq) {
                 startTime = System.nanoTime();
@@ -78,42 +80,41 @@ public final class QuickRepeatsSearching {
                 LowComplexitySequence m1 = new LowComplexitySequence();
                 m1.FindAllSSRs(seq[i], telomers);
                 byte[] ssrmsk = m1.MapBytes();
-                int[] ibloks = m1.IntBlocks();
+                int[] ssr = m1.IntBlocks();
+
+                bb.add(ssr);
 
                 MaskingSequence ms = new MaskingSequence();
 
                 int[] u = ms.Mask(seq[i], ssrmsk, kmerln, minlenseq);
                 repeatslen = ms.RepeatLength();
                 reallen = ms.ReallSeqLength();
+                repeatslen = (repeatslen * 100) / (l - reallen);
+                gaps = (reallen * 100) / l;
+
+                System.out.println("Target sequence length = " + l + " nt");
+                System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
+                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
 
                 if (u.length > 1) {
-                    repeatslen = (repeatslen * 100) / (l - reallen);
-                    gaps = (reallen * 100) / l;
-
-                    System.out.println("Target sequence length = " + l + " nt");
-                    System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                    System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
-
                     if (MaskedShow) {
                         MaskSave(i, u);
                     }
-                    bb = new ArrayList<>();
-
                     if (MaskedPicture) {
                         PictureMasking(u);
                     } else {
                         System.out.println("Clustering started...");
                         ClusteringMasking(seq[i], u, sim);
                     }
-                    bb.addFirst(ibloks);
-
-                    if (bb != null) {
-                        if (GFFShow) {
-                            GffSave(i);
-                        }
-                        PictureSave(i, iwidth, iheight);
-                    }
                 }
+
+                if (bb != null) {
+                    if (GFFShow) {
+                        GffSave(i);
+                    }
+                    PictureSave(i, iwidth, iheight);
+                }
+
             }
         }
     }
@@ -276,7 +277,7 @@ public final class QuickRepeatsSearching {
     }
 
     private void PictureSave(int n, int dw, int dh) throws IOException {
-        int maxClusters = 500;
+        int maxClusters = 250;
         int maxImageDimension = 40_000;
         int minImageWidth = 1000;
         int minImageHeight = 100;
