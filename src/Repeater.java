@@ -10,9 +10,9 @@ public class Repeater {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
             String s = String.join(" ", args).toLowerCase() + " ";
-            int kmer = 19;     //quick search: optimal rules: kmer=19-21 seqlen=30...100, gap=kmer kmer=12-18 for short seqyences
-            int minlen = 30;
-            int seqlen = 60;
+            int kmer = 12;     //quick search: optimal rules: kmer=19-21 seqlen=30...100, gap=kmer kmer=12-18 for short seqyences
+            int minlen = 20;
+            int seqlen = 30;
             int gap = kmer;
             int width = 0;
             int hight = 0;

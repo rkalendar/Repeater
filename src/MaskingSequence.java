@@ -1,5 +1,7 @@
+
 import java.util.ArrayList;
 import java.util.HashMap;
+
 public class MaskingSequence {
 
     private long gapslen = 0;
@@ -60,9 +62,9 @@ public class MaskingSequence {
             int x1 = z.get(i);
             int x2 = z.get(i + 1);
             if (x2 - x1 > minlenseq) {
-                u[++n] = x1;
-                u[++n] = x2;
-                repeatslen = repeatslen + (x2 - x1 + 1);
+                u[++n] = x1;         // start x1
+                u[++n] = x2 - x1 + 1;// length 
+                repeatslen += (x2 - x1 + 1);
             }
         }
         return u;
