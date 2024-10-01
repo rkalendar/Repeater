@@ -11,7 +11,7 @@ email: ruslan.kalendar@helsinki.fi
 
 Operating system(s): Platform independent
 
-Programming language: Java 22 or higher
+Programming language: Java 23 or higher
 
 [Java Downloads](https://www.oracle.com/java/technologies/downloads/)
 
