@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.awt.BasicStroke;
 import java.io.FileWriter;
@@ -71,7 +70,7 @@ public final class QuickRepeatsSearching {
         for (int i = 0; i < nseq; i++) {
             int l = seq[i].length();
             repeatslen = 0;
-            reallen = 0;
+            gapslen = 0;
             bb = new ArrayList<>();
 
             if (l > minlenseq) {
@@ -88,13 +87,13 @@ public final class QuickRepeatsSearching {
 
                 int[] u = ms.Mask(seq[i], ssrmsk, kmerln, minlenseq);
                 repeatslen = ms.RepeatLength();
-                reallen = ms.ReallSeqLength();
-                repeatslen = (repeatslen * 100) / (l - reallen);
-                gaps = (reallen * 100) / l;
+                gapslen = ms.GapsLength();
+                repeatslen = (repeatslen * 100) / (l - gapslen);
+                gaps = (gapslen * 100) / l;
 
                 System.out.println("Target sequence length = " + l + " nt");
                 System.out.println("Sequence coverage by repeats =" + String.format("%.2f", repeatslen) + "%");
-                System.out.println("Sequence gap (bp)=" + (int) reallen + " (" + String.format("%.4f", gaps) + "%)\n");
+                System.out.println("Sequence gap (bp)=" + (int) gapslen + " (" + String.format("%.4f", gaps) + "%)\n");
 
                 if (u.length > 1) {
                     if (MaskedShow) {
@@ -218,7 +217,7 @@ public final class QuickRepeatsSearching {
             sr.append("kmer=").append(kmerln).append("\n").append("\n").append("Minimal repeat block size=").append(minlenseq).append("\n\n");
             sr.append("Sequence length = ").append(l).append("\n");
             sr.append("Sequence coverage by repeats = ").append(String.format("%.2f", repeatslen)).append("%\n");
-            sr.append("Sequence gap (bp)=").append((int) reallen).append(" (").append(String.format("%.4f", gaps)).append("%)\n");
+            sr.append("Sequence gap (bp)=").append((int) gapslen).append(" (").append(String.format("%.4f", gaps)).append("%)\n");
             sr.append("Time taken: ").append(duration).append(" seconds\n\n");
             sr.append("__________________________________________________\n Repeats search for: ").append(filePath).append("//").append(sname[n]).append(" ").append(l).append("bp :\n");
             if (SeqShow) {
@@ -402,7 +401,7 @@ public final class QuickRepeatsSearching {
     }
 
     private double gaps = 0;
-    private double reallen = 0;
+    private double gapslen = 0;
     private double repeatslen = 0;
     private long startTime;
     private int nseq = 0;
