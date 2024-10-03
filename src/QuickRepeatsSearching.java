@@ -276,7 +276,7 @@ public final class QuickRepeatsSearching {
     }
 
     private void PictureSave(int n, int dw, int dh) throws IOException {
-        int maxClusters = 250;
+        int maxClusters = 50;
         int maxImageDimension = 40_000;
         int minImageWidth = 1000;
         int minImageHeight = 100;
