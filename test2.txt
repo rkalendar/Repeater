@@ -1,0 +1,81 @@
+java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar e:\Genomes\Nomada_hirtipes\ch16.fasta 
+
+java -jar -Xms8g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar e:\Genomes\Hydra_vulgaris\ kmer=21 min=100 sln=150
+
+java -jar -Xms8g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar e:\Genomes\GRCh38.p14\
+
+java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Coelopa_pilipes\ image=5000x3000
+
+java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar e:\1.txt
+
+java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar C:\MyPrograms\Java\Repeater2\test\0.fasta
+
+C:\graalvm-jdk-22.0.1+8.1\bin\java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar  
+
+C:\MyPrograms\Java\Repeater2\test\1.txt mask=false gff=false
+
+java -jar C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar C:\MyPrograms\Java\Repeater2\test\sample_genome.fasta kmer=12 min=30 sln=120 mask=false gff=false
+ 
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Haemonchus_contortus\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Hydra_vulgaris\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Tests\_119721183.txt
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Musa_acuminata\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Varroa_destructor\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Nomada_hirtipes\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Solanum_pennellii\
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Oryza_sativa\
+
+java -jar -Xms8g -Xmx64g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Cycas_panzhihuaensis\ kmer=21 min=30 sln=100 mask=false gff=false
+
+java -jar -Xms8g -Xmx64g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Hordeum_marinum\1H.fasta kmer=21 min=30 sln=60 mask=false image=5000x3000
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Chloroplast\ mask=false kmer=21 min=30 sln=60  image=5000x200
+
+java -jar -Xms8g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Seq\ kmer=21 min=40 sln=90 mask=false image=10000x200
+
+
+C:\MyPrograms\Java\Repeater2\test\1.txt mask=false gff=false
+
+C:\graalvm21\bin\java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar D:\Genomes\ kmer=21 min=100 sln=500
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar c:\MyPrograms\Java\Repeater2\test\14.txt
+
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\GRCh38.p14\X.fasta kmer=21 min=25 image=5000x3000
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\GRCh38.p14\
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar c:\MyPrograms\Java\Repeater2\test\NZ_CP085301.txt quick=false
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Coelopa_pilipes\ sln=120 mask=false 
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Puccinia_triticina\ mask=false gff=false
+
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\17\Seq\ mask=false kmer=21 min=21 sln=120  
+
+C:\Program Files\Java\jdk-23\bin\java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Seq\ kmer=19 image=2500x100
+
+java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Ecoli\ mask=false sln=120 image=5000x200
+
+java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Plants\ mask=false sln=120
+ 
+java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar C:\MyPrograms\Java\Repeater2\test\ mask=false kmer=21 min=30 
+
+C:\MyPrograms\Java\Repeater2\test\MF782455.txt mask=false quick=false kmer=18 min=30 sln=90  
+
+ 
+
+java -jar -Xms4g -Xmx32g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Chloroplast\ quick=false image=5000x50
+ 
+java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Ascaris_suum\ mask=false sln=120
+
+java -jar -Xms4g -Xmx16g C:\MyPrograms\Java\Repeater2\dist\Repeater2.jar E:\Genomes\Ecoli\ mask=false quick=false kmer=18 min=30 sln=90  
