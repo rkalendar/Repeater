@@ -11,7 +11,7 @@ email: ruslan.kalendar@helsinki.fi
 
 Operating system(s): Platform independent
 
-Programming language: Java 22 or higher
+Programming language: Java 23 or higher
 
 [Java Downloads](https://www.oracle.com/java/technologies/downloads/)
 
@@ -33,7 +33,7 @@ To run the project from the command line, go to the target folder and type the f
 ```
 java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt mask=false gff=false
 
-java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=18 sln=90 image=5000x300 quick=false mask=false seqshow=true
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=18 sln=90 image=5000x300 mask=false seqshow=true
 
 java -jar <Repeater2Path>\dist\Repeater2.jar \test\2.txt ssr=true seqshow=true flanks=100
 
@@ -77,8 +77,6 @@ mask=true/false generate a new file with masking repeats (default mask=true)
 gff=true/false generate a GFF file (default gff=true)
 
 seqshow=true/false extract repeat sequences (default seqshow=false)
-
-quick=true/false quick analysis of repeats, without deep analysis and their clustering (default quick=true)
 
 ```
 
