@@ -1,5 +1,5 @@
-## REPEATER2
-## Genome-wide tool for rapid de novo identification and visualisation of interspersed and tandem repeats.
+## REPEATER
+## Genome-wide tool for rapid de novo identification, profiling and visualisation of interspersed and tandem repeats.
 
 ## Author
 Ruslan Kalendar 
