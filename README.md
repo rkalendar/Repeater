@@ -18,8 +18,7 @@ Programming language: Java 23 or higher
 
 How do I set or change [the Java path system variable](https://www.java.com/en/download/help/path.html)
 
-
-To run the project from the command line, go to the target folder and type the following; an individual file or a file folder can be specified:
+To run the project from the command line options, separated by spaces, go to the target folder and type the following; an individual file or a file folder can be specified:
 
 ```java -jar Repeater2.jar <target_file_path/Folder_path>```
 
