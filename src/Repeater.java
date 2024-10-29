@@ -61,9 +61,6 @@ public class Repeater {
                 if (x > j) {
                     kmer = StrToInt(s.substring(j + 5, x));
                 }
-                if (kmer < 12) {
-                    kmer = 12;
-                }
             }
             if (s.contains("min=")) {
                 int j = s.indexOf("min=");
@@ -71,18 +68,12 @@ public class Repeater {
                 if (x > j) {
                     minlen = StrToInt(s.substring(j + 4, x));
                 }
-                if (minlen < kmer) {
-                    minlen = kmer;
-                }
             }
             if (s.contains("sln=")) {
                 int j = s.indexOf("sln=");
                 int x = s.indexOf(" ", j);
                 if (x > j) {
                     seqlen = StrToInt(s.substring(j + 4, x));
-                }
-                if (seqlen < minlen) {
-                    seqlen = minlen;
                 }
             }
             if (s.contains("gap=")) {
