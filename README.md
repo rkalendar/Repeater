@@ -91,7 +91,6 @@ One line starts with a ">" sign and a sequence identification code. A textual de
 One or more lines containing the sequence itself. A file in FASTA format may comprise more than one sequence.
 
 
-
 ## The output is saved in a GFF3 file: a nine-column, tab-delimited, plain text file. 
  
 GFF format General Feature Format describes genes and other features associated with DNA, RNA and Protein sequences. GFF lines have nine tab-separated fields:
@@ -104,5 +103,5 @@ https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
 5. stop - The ending position of the feature (inclusive).
 6. score - length 
 7. strand - Valid entries include '+', '-', or '.' (for those who don't know/care).
-8. phase—If the feature is a coding exon, the frame should be a number between 0 and 2, representing the first base's reading frame. If the feature is not a coding exon, the value should be '.'
+8. phase - If the feature is a coding exon, the frame should be a number between 0 and 2, representing the first base's reading frame. If the feature is not a coding exon, the value should be '.'
 9. Sequence (if parameter used: seqshow=true).
