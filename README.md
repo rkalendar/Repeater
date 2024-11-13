@@ -1,11 +1,11 @@
 ## REPEATER
-## Genome-wide tool for rapid de novo identification, profiling and visualisation of interspersed and tandem repeats.
+## Genome-wide tool for rapid de novo identification, profiling, and visualisation of interspersed and tandem repeats.
 
 ## Author
 Ruslan Kalendar 
 email: ruslan.kalendar@helsinki.fi
 
-[Web](http://primerdigital.com/tools/repeat.html)
+[Web](http://primerdigital.com/tools/repeats.html)
 
 ## Availability and requirements:
 
