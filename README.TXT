@@ -7,7 +7,7 @@ email: ruslan.kalendar@helsinki.fi
 
 [TotalRepeats online tool](http://primerdigital.com/tools/repeats.html)
 
-## Citattion
+## Citation Reference
 Kalendar R, Kairov U 2024. Genome-wide tool for sensitive de novo identification and visualisation of interspersed and tandem repeats. Bioinformatics and biology insights, 18: 1-11. DOI: 10.1177/11779322241306391
 	
 
