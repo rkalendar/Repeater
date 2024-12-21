@@ -1,1 +1,2 @@
-Genome-wide tool for sensitive de novo identification and visualisation of interspersed and tandem repeats
+TotalRepeats
+https://primerdigital.com/tools/repeats.html
