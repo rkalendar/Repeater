@@ -16,7 +16,7 @@ https://journals.sagepub.com/doi/10.1177/11779322241306391
 
 Operating system(s): Platform independent
 
-Programming language: Java 23 or higher
+Programming language: Java 24 or higher
 
 Java Downloads: https://www.oracle.com/java/technologies/downloads/
 
