@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
@@ -162,7 +161,7 @@ public class Repeater {
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> -ssronly -seqshow flanks=100");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=18 min=30 sln=100 -nomask\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
-            System.out.println("Large genome settings:");
+            System.out.println("Large genome usage (you will have to show the program to use more RAM, for example as listed here, up to 64 Gb memory: -Xms16g -Xmx64g):"");
             System.out.println("java -jar -Xms16g -Xmx64g \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=20 sln=100 image=10000x300\n");
             System.out.println("Analysing all files in the directory:");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar \\Repeater2\\test\\\n");
