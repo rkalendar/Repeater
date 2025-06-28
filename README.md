@@ -46,7 +46,7 @@ java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=20 sln
 
 ```
 
-### Large genome usage:
+### Large genome usage (you will have to show the program to use more RAM, for example as listed here, up to 64 Gb memory: -Xms16g -Xmx64g):
 ```
 java -jar -Xms16g -Xmx64g <\dist\Repeater2.jar> <input_Folder_path> kmer=20 sln=100
 
