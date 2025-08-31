@@ -29,57 +29,51 @@ Go to the target folder and type the following; an individual file or a file fol
 ```java -jar Repeater2.jar <target_file_path/Folder_path>```
 
 
-### Basic usage:
+### Basic Usage:
 
 ```java -jar <Repeater2Path>\dist\Repeater2.jar <target_file_path> optional_commands```
 
 
-### Examples:
+### Example Commands:
 ```
-java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt -nomask -nogff
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\4.txt  
 
-java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=18 sln=90 image=5000x300 -nomask -seqshow
+# Run with k-mer size = 18, minimal repeat length = 90, and image output
+java -jar <Repeater2Path>\dist\Repeater2.jar \test\ kmer=18 sln=90 image=5000x300 
 
+# SSR/telomeric loci only, extract sequences with flanks
 java -jar <Repeater2Path>\dist\Repeater2.jar \test\2.txt -ssronly -seqshow flanks=100
 
+# Full genome analysis with parameters
 java -jar C:\Repeater2\dist\Repeater2.jar D:\Genomes\Hydra_vulgaris\ kmer=20 sln=100 image=10000x300
 
 ```
 
-### Large genome usage (you will have to show the program to use more RAM, for example as listed here, up to 64 Gb memory: -Xms16g -Xmx64g):
+### Large genome usage (you will have to show the program to use more RAM, for example as listed here, up to 64 Gb memory: -Xms16g -Xmx64g)
+# For large genomes, increase Java heap memory allocation (up to 64 GB recommended):
 ```
 java -jar -Xms16g -Xmx64g <\dist\Repeater2.jar> <input_Folder_path> kmer=20 sln=100
 
 java -jar -Xms16g -Xmx64g C:\Repeater2\dist\Repeater2.jar E:\Genomes\Hordeum_marinum\
 ```
 
-Analysing all files in the folder:
+### To analyze all sequences in a folder:
 
 ```
 java -jar \Repeater2\dist\Repeater2.jar \Repeater2\test\ 
 
 java -jar -Xms16g -Xmx32g C:\Repeater2\dist\Repeater2.jar E:\Genomes\GRCh38.p14\
 ```
-
-
-**Common options:**
-
-```
-kmer=19	 minimal kmer=12 (default kmer=18)
-
-min=30	 initial repeat length (default min=30)
-
-sln=90	 string length (default sln=90)
-
-flanks=100	extend the flanks of the repeat with an appropriate length (100 nt) (default flanks=0)
-
-image=10000x300	(by default, the dimensionality of the image is automatically determined)
-
--seqshow	extract repeat sequences (by default this function is not performed)
-
--ssronly	analysing only the SSR/telomers loci (by default this function is not performed)
-
-```
+### Common Options
+| Option       | Description                                                |
+| ------------ | ---------------------------------------------------------- |
+| `kmer=19`    | k-mer length (default = 18, minimum = 12)                  |
+| `min=30`     | Minimal repeat length (default = 30)                       |
+| `sln=90`     | Minimal string length for clustering (default = 90)        |
+| `flanks=100` | Extend flanks of repeats by specified length (default = 0) |
+| `image=WxH`  | Output image dimensions (default = automatic)              |
+| `-seqshow`   | Extract repeat sequences (off by default)                  |
+| `-ssronly`   | Analyze only SSR/telomeric loci (off by default)           |
 
 ## Sequence Entry:
 
