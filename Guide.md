@@ -56,4 +56,3 @@ java -jar Repeater2.jar test/ kmer=18 sln=90 -seqshow
 
 ---
 
-Would you like me to make this **the first section** of your README (so users see it right away), or keep it as a separate “Quick-Start” section after the introduction?
