@@ -72,8 +72,9 @@ java -jar -Xms16g -Xmx32g C:\Repeater2\dist\Repeater2.jar E:\Genomes\GRCh38.p14\
 | `sln=90`     | Minimal string length for clustering (default = 90)        |
 | `flanks=100` | Extend flanks of repeats by specified length (default = 0) |
 | `image=WxH`  | Output image dimensions (default = automatic)              |
-| `-seqshow`   | Extract repeat sequences (off by default)                  |
-| `-ssronly`   | Analyze only SSR/telomeric loci (off by default)           |
+| `-seqshow`   | Extract repeat sequences                  |
+| `-ssronly`   | Analyze only SSR/telomeric loci            |
+| `-maskonly`  | Only generate masked output (skip clustering)    |
 
 ## Sequence Entry:
 
