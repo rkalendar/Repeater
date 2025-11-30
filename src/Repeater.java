@@ -147,7 +147,7 @@ public class Repeater {
             System.out.println("image=10000x300\t (by default, the dimensionality of the image is automatically determined)");
             System.out.println("-seqshow\textract repeat sequences");
             System.out.println("-ssronly\tanalyzing only the SSR/telomers loci\n");
-            System.out.println("-maskonly\tonly generate masked output (skip clustering/annotation)\n");            
+            System.out.println("-maskonly\tonly generate masked output (skip clustering)\n");            
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> -ssronly -seqshow flanks=100");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=18 min=30 sln=100 -nomask\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
