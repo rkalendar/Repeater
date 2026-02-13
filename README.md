@@ -5,7 +5,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.1177%2F11779322241306391-blue)](https://doi.org/10.1177/11779322241306391)
 [![Java](https://img.shields.io/badge/Java-25+-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
 [![Platform](https://img.shields.io/badge/Platform-Independent-green.svg)]()
-[![License](https://img.shields.io/badge/License-Open%20Source-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
 
 ---
 
