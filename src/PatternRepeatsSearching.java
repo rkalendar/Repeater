@@ -24,8 +24,7 @@ public final class PatternRepeatsSearching {
 public void SetSequences(String[] seq, String[] sname) {
     this.seq = seq;
     this.sname = new String[sname.length];
-    for (int i = 0; i < sname.length; i++) {
-        // отрезаем всё после первого whitespace, оставляя только ID (например, "MF782455.1")
+    for (int i = 0; i < sname.length; i++) {     
         this.sname[i] = sname[i].split("\\s+", 2)[0];
     }
     nseq = seq.length;
