@@ -57,11 +57,12 @@ REPEATER is a powerful genome-wide tool designed for sensitive *de novo* identif
 - **Comprehensive Analysis**: Identifies all types of repetitive elements
 - **Genome-Wide Scale**: Handles entire genomes efficiently
 - **Flexible Parameters**: Customizable k-mer size and repeat length thresholds
-- **Visual Output**: Generates publication-quality repeat landscape images
+- **Visual Output**: Publication-quality repeat-landscape figures as both raster **PNG** and scalable vector **SVG**
 - **Sequence Extraction**: Retrieve repeat sequences with flanking regions
 - **Multiple Formats**: Supports FASTA and plain text input
-- **GFF3 Output**: Standard format for downstream bioinformatics pipelines
+- **GFF-style Report**: Tab-delimited output for downstream bioinformatics pipelines
 - **SSR-Focused Mode**: Specialized analysis for simple sequence repeats
+- **Configurable Output Folder**: Send all results to any directory (default: current directory)
 - **Memory Scalable**: Configurable for genomes of any size
 
 ---
@@ -80,7 +81,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 ### Prerequisites
 
 - **Operating System**: Platform independent (Windows, macOS, Linux)
-- **Java Runtime**: Java 26 or higher
+- **Java Runtime**: Java 25 or higher
 - **Memory**: 4GB minimum, 16-64GB recommended for large genomes
 - **Disk Space**: Sufficient space for input genomes and output files
 
@@ -89,7 +90,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 #### Option 1: Download from Oracle
 
 1. Visit [Java Downloads](https://www.oracle.com/java/technologies/downloads/)
-2. Download Java 26 or newer for your operating system
+2. Download Java 25 or newer for your operating system
 3. Follow the installation wizard
 4. Verify installation:
    ```bash
@@ -111,16 +112,16 @@ conda config --set channel_priority strict
 
 **Step 2: Create Java Environment**
 
-Create a dedicated environment with OpenJDK 26:
+Create a dedicated environment with OpenJDK 25:
 
 ```bash
-conda create -n java26 openjdk=26
+conda create -n java25 openjdk=25
 ```
 
 **Step 3: Activate Environment**
 
 ```bash
-conda activate java26
+conda activate java25
 ```
 
 **Step 4: Verify Installation**
@@ -154,7 +155,7 @@ If you need to set or change the Java PATH variable:
    ```
 
 4. **Check the output**  
-   Results will be saved in the same directory as your input file
+   Results are saved to the **current working directory** by default. Use `out=<path>` to choose another folder (it is created automatically if it does not exist).
 
 ---
 
@@ -211,6 +212,15 @@ java -jar dist/Repeater2.jar /path/to/sequences/
 
 Process all sequence files in a directory
 
+#### Example 6: Choose Output Folder and Image Format
+```bash
+java -jar dist/Repeater2.jar genome.fasta out=results/ format=svg
+```
+
+**Parameters used:**
+- `out=results/`: Write all result files to `results/` (created if missing)
+- `format=svg`: Produce only the scalable vector figure (`both` is the default; `none` skips images)
+
 ### Large Genome Analysis
 
 For large genomes (e.g., human, wheat, pine), increase Java heap memory allocation:
@@ -259,19 +269,27 @@ java -Xms16g -Xmx32g -jar dist/Repeater2.jar genomes/GRCh38.p14/
 
 | Option        | Type    | Default | Description |
 |---------------|---------|---------|-------------|
-| `kmer=N`      | Integer | 18      | K-mer length for repeat detection (minimum: 12) |
-| `min=N`       | Integer | 30      | Minimum repeat length to report (bp) |
-| `sln=N`       | Integer | 90      | Minimum string length for clustering analysis (bp) |
-| `flanks=N`    | Integer | 0       | Length of flanking sequences to extract (bp) |
-| `image=WxH`   | String  | Auto    | Output image dimensions (width×height in pixels) |
+| `kmer=N`      | Integer | 18      | K-mer length for repeat detection (range: 12–32; values above 32 are capped) |
+| `min=N`       | Integer | 30      | Minimum repeat length to report (bp); raised to `kmer` if smaller |
+| `sln=N`       | Integer | 60      | Minimum repeat block length for clustering (bp); raised to `min` if smaller |
+| `flanks=N`    | Integer | 0       | Length of flanking sequences to extract (bp; 0–1000) |
+| `image=WxH`   | String  | Auto    | Output image dimensions (width×height in pixels; width ≤ 40000) |
+
+### Output Options
+
+| Option         | Type   | Default            | Description |
+|----------------|--------|--------------------|-------------|
+| `out=<path>`   | String | current directory  | Folder for all result files; created automatically if missing |
+| `outdir=<path>`| String | current directory  | Alias for `out=` |
+| `format=MODE`  | String | `both`             | Image output: `both`, `png`, `svg`, or `none` (skip image generation) |
 
 ### Analysis Modes
 
 | Option       | Description |
 |--------------|-------------|
-| `-seqshow`   | Extract and output repeat sequences |
+| `-seqshow`   | Extract and output repeat sequences (added to the report's `Sequence` column) |
 | `-ssronly`   | Analyze only SSR/microsatellite and telomeric loci |
-| `-maskonly`  | Generate only masked sequence output (skip clustering) |
+| `-maskonly`  | Generate only the masked sequence output (skip clustering) |
 
 ### Parameter Guidelines
 
@@ -340,54 +358,60 @@ AAAATTTTGGGGCCCCAAAATTTTGGGGCCCCAAAATTTT
 
 ## 📤 Output Format
 
-### GFF3 Format
+### Where Results Are Written
 
-REPEATER outputs results in **General Feature Format Version 3 (GFF3)**, a standardized tab-delimited format for genomic annotations.
+All result files are written to the **current working directory** by default, or to the folder given by `out=<path>` / `outdir=<path>` (created automatically if it does not exist). File names are derived from the input file name:
 
-**Specification:** [GFF3 Documentation](https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md)
+- Single-sequence input → `<input>.gff`, `<input>.msk`, `<input>.png`, `<input>.svg`
+- Multi-sequence FASTA → one set per record, suffixed `_1`, `_2`, … (e.g. `genome.fasta_1.gff`)
 
-### GFF3 Column Description
+### Generated Files
 
-| Column | Name     | Description |
-|--------|----------|-------------|
-| 1      | seqid    | Sequence/chromosome identifier (cluster ID) |
-| 2      | source   | Program name ("REPEATER") |
-| 3      | type     | Feature type ("repeat") |
-| 4      | start    | Start position (1-based, inclusive) |
-| 5      | end      | End position (1-based, inclusive) |
-| 6      | score    | Repeat length (bp) |
-| 7      | strand   | Strand orientation ('+', '-', or '.') |
-| 8      | phase    | Reading frame (always '.' for repeats) |
-| 9      | attributes | Additional information (sequence if `-seqshow` used) |
+| File          | Format            | Description |
+|---------------|-------------------|-------------|
+| `<name>.gff`  | Tab-delimited text | Repeat report (run parameters, coverage, and one row per repeat copy) |
+| `<name>.msk`  | FASTA             | Soft-masked sequence — repeat regions in **lowercase**, the rest in **UPPERCASE** |
+| `<name>.png`  | PNG image         | Repeat-landscape figure (raster). Written unless `format=svg`/`none` |
+| `<name>.svg`  | SVG image         | Repeat-landscape figure (scalable vector). Written unless `format=png`/`none` |
 
-### Example GFF3 Output
+### Report Format (`.gff`)
 
-```gff3
-##gff-version 3
-Chr1	REPEATER	repeat	1000	1500	500	+	.	ID=repeat1;Type=tandem
-Chr1	REPEATER	repeat	3500	4200	700	-	.	ID=repeat2;Type=interspersed
-Chr2	REPEATER	repeat	800	1100	300	+	.	ID=repeat3;Type=SSR;Motif=AT
+The report is a tab-delimited, GFF-style text file. It opens with `#` comment lines (run parameters and repeat coverage), followed by a column header line and one row per repeat copy.
+
+**Column header:** `Seqid` · `Repeat` · `ClusterID` · `Start` · `Stop` · `Length` · `Strand` · `Phase` · `Sequence`
+
+| Column | Name       | Description |
+|--------|------------|-------------|
+| 1      | Seqid      | Sequence identifier (taken from the FASTA header) |
+| 2      | Repeat     | Source/type placeholder (always `.`) |
+| 3      | ClusterID  | Cluster/family number grouping related repeat copies |
+| 4      | Start      | Start position (1-based) |
+| 5      | Stop       | End position (1-based, inclusive) |
+| 6      | Length     | Repeat length (bp) |
+| 7      | Strand     | `+` (forward) or `-` (reverse complement) |
+| 8      | Phase      | Reserved placeholder |
+| 9      | Sequence   | Repeat sequence — populated only with `-seqshow` (flanking regions in UPPERCASE when `flanks=` is set) |
+
+### Example Report Output
+
+```text
+#REPEATER2 (2024) by Ruslan Kalendar (ruslan.kalendar@helsinki.fi) https://github.com/rkalendar/Repeater
+#kmer=18
+#Minimal repeat=30
+#Repeat filter=60
+#Quick analysis is false
+#Sequence length (bp)=4567
+#Sequence coverage by repeats 97.94%
+#Repeats search for: special-complex
+#Time taken: 0 seconds
+
+Seqid	Repeat	ClusterID	Start	Stop	Length	Strand	Phase	Sequence
+special-complex	.	1	62	1028	967	+
+special-complex	.	1	3584	4550	967	+
+special-complex	.	2	1101	1737	637	+
 ```
 
-### Additional Output Files
-
-Depending on options used, REPEATER may generate:
-
-1. **Masked Sequences** (`.masked` extension)
-   - Input sequence with repeats masked (lowercase or 'N')
-
-2. **Repeat Sequences** (`.repeats` extension)
-   - Extracted repeat sequences with flanking regions
-
-3. **Visualization Images** (`.png` or `.jpg`)
-   - Graphical representation of repeat distribution
-   - Repeat density plots
-   - Chromosome/scaffold overview
-
-4. **Statistics Report** (`.stats` or `.txt`)
-   - Summary of repeat content
-   - Repeat family statistics
-   - Coverage information
+> With `-seqshow`, the repeat nucleotide sequence is appended as the final column of each row.
 
 ---
 
@@ -535,15 +559,14 @@ java -jar /full/path/to/Repeater2.jar input.fasta
 #### Issue 4: No Output Generated
 
 **Check:**
-1. Write permissions in output directory
+1. Write permissions in the output directory (or the `out=` folder)
 2. Disk space availability
-3. Input file format is correct
+3. Input file format is correct — a file containing non-ASCII bytes or no `>` FASTA header reports *"There is no sequence(s)."*
 4. Java version is 25+
 
-**Debug command:**
+REPEATER prints progress to the console as it runs (target file, k-mer, coverage, and each file it saves). Re-run and read that log to see where it stopped:
 ```bash
-# Add verbose output (if available)
-java -jar dist/Repeater2.jar input.fasta -verbose
+java -jar dist/Repeater2.jar input.fasta out=results/
 ```
 
 #### Issue 5: "Invalid or corrupt JAR file"
@@ -596,11 +619,14 @@ java -Xms16g -Xmx32g -jar dist/Repeater2.jar genome.fasta kmer=20
 # SSR detection
 java -jar dist/Repeater2.jar sequence.fasta -ssronly -seqshow flanks=100
 
-# Custom visualization
-java -jar dist/Repeater2.jar sequence.fasta image=8000x400
+# Custom visualization into a results folder
+java -jar dist/Repeater2.jar sequence.fasta image=8000x400 out=results/
 
-# Masking only
-java -jar dist/Repeater2.jar genome.fasta -maskonly kmer=18
+# Vector figure only (SVG)
+java -jar dist/Repeater2.jar sequence.fasta format=svg
+
+# Masking only, no images
+java -jar dist/Repeater2.jar genome.fasta -maskonly kmer=18 format=none
 ```
 
 ### Parameter Quick Guide
@@ -610,8 +636,8 @@ java -jar dist/Repeater2.jar genome.fasta -maskonly kmer=18
 | Small genome analysis | `kmer=15 min=30` |
 | Large genome analysis | `kmer=20 sln=100 -Xmx32g` |
 | SSR detection | `-ssronly min=12 flanks=100` |
-| Masking for BLAST | `-maskonly kmer=18` |
-| Publication figure | `kmer=20 image=10000x500` |
+| Masking for BLAST | `-maskonly kmer=18 format=none` |
+| Publication figure (vector) | `kmer=20 image=10000x500 format=svg` |
 
 ---
 
