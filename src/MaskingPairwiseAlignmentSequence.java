@@ -88,6 +88,11 @@ public class MaskingPairwiseAlignmentSequence {
         if (seq == null || kmer <= 0 || minlenblock <= 0) {
             return new byte[0];
         }
+        // A 64-bit 2-bit-packed key can represent at most 32 bases; beyond that
+        // the rolling key would silently collide. Cap to the representable limit.
+        if (kmer > 32) {
+            kmer = 32;
+        }
         final int l = seq.length();
         if (l == 0 || l < kmer) {
             return new byte[l];
@@ -108,7 +113,7 @@ public class MaskingPairwiseAlignmentSequence {
         }
 
         // rolling key helpers
-        final long keyMask = (kmer == 32) ? -1L : ((1L << (2 * kmer)) - 1L);
+        final long keyMask = (kmer >= 32) ? -1L : ((1L << (2 * kmer)) - 1L);
 
         // Count all valid k-mers on both strands
         java.util.HashMap<Long, int[]> km = new java.util.HashMap<>(Math.min(l, 1 << 20));
