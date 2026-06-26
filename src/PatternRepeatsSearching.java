@@ -1,12 +1,17 @@
 import java.awt.BasicStroke;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Iterator;
@@ -21,17 +26,36 @@ import javax.imageio.stream.ImageOutputStream;
 
 public final class PatternRepeatsSearching {
 
-public void SetSequences(String[] seq, String[] sname) {
-    this.seq = seq;
-    this.sname = new String[sname.length];
-    for (int i = 0; i < sname.length; i++) {     
-        this.sname[i] = sname[i].split("\\s+", 2)[0];
+    // Output image formats.
+    public static final int FMT_BOTH = 0;
+    public static final int FMT_PNG = 1;
+    public static final int FMT_SVG = 2;
+    public static final int FMT_NONE = 3;
+
+    public void SetSequences(String[] seq, String[] sname) {
+        this.seq = seq;
+        this.sname = new String[sname.length];
+        for (int i = 0; i < sname.length; i++) {
+            // keep only the sequence ID (e.g. "MF782455.1"), dropping any description
+            this.sname[i] = sname[i].split("\\s+", 2)[0];
+        }
+        nseq = seq.length;
     }
-    nseq = seq.length;
-}
 
     public void SetFileName(String a) {
         filePath = a;
+    }
+
+    /**
+     * Directory where result files (.gff/.msk/.png/.svg) are written. When null
+     * or empty, files are written to the current working directory.
+     */
+    public void SetOutputDir(String dir) {
+        outputDir = dir;
+    }
+
+    public void SetImageFormat(int f) {
+        imgFormat = f;
     }
 
     public void SetRepeatLen(int kmer, int minlen, int minseq) {
@@ -40,6 +64,11 @@ public void SetSequences(String[] seq, String[] sname) {
         minlenseq = minseq;
         if (kmerln < 12) {
             kmerln = 12;
+        }
+        if (kmerln > 32) {
+            // The 2-bit rolling key packs one base per 2 bits of a 64-bit long,
+            // so 32 bases is the maximum that can be represented without collisions.
+            kmerln = 32;
         }
         if (minlenblock < kmerln) {
             minlenblock = kmerln;
@@ -86,7 +115,7 @@ public void SetSequences(String[] seq, String[] sname) {
         startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
             MaskingPairwiseAlignmentSequence ms = new MaskingPairwiseAlignmentSequence();
-            int[] u = ms.Mask(seq[i], kmerln, minlenseq);
+            ms.Mask(seq[i], kmerln, minlenseq);
             SaveMask(i, ms.getByteMask());
         }
     }
@@ -101,6 +130,7 @@ public void SetSequences(String[] seq, String[] sname) {
     }
 
     public void RunSSR() throws IOException {
+        startTime = System.nanoTime();
         for (int i = 0; i < nseq; i++) {
             LowComplexitySequence m1 = new LowComplexitySequence();
             m1.FindAllSSRs(seq[i], telomers);
@@ -139,7 +169,7 @@ public void SetSequences(String[] seq, String[] sname) {
         long duration = (System.nanoTime() - startTime) / 1000000000;
         System.out.println("Time taken: " + duration + " seconds\n");
 
-        String maskedfile = (nseq == 1) ? filePath + ".msk" : filePath + "_" + (n + 1) + ".msk";
+        String maskedfile = outPath(n, ".msk");
 
         try (FileWriter fileWriter = new FileWriter(maskedfile)) {
             System.out.println("Saving masked file: " + maskedfile);
@@ -164,19 +194,25 @@ public void SetSequences(String[] seq, String[] sname) {
         }
     }
 
+    /**
+     * Identifies all interspersed/tandem repeats in {@code seq}.
+     *
+     * <p>The k-mer indexing uses a 2-bit rolling hash (A/C/G/T -> 0..3) over both
+     * strands instead of allocating a {@link String} per window and hashing it.
+     * Windows containing an ambiguous base/gap (code 4) are skipped. The forward
+     * strand seeds the map; the reverse-complement strand only increments counts
+     * of forward k-mers (inverted-repeat detection). Position indexing, occurrence
+     * ordering and the {@code > nblocks} threshold are preserved exactly, so the
+     * downstream clustering and the emitted GFF/MSK are identical to the previous
+     * String/HashMap implementation, just faster and with far less allocation.
+     */
     private int FindAllRepeats(String seq, int kmer) {
-        int k, n, t, i, h, e, y, z, w, x, q, j, r, p;
+        int k, n, t, i, h, e, y, z, w, x, q, r, p;
         int l = seq.length();
         int g = l + l + 1;
 
-        String s;
-        String aseq = dna.ComplementDNA(seq);
-        HashMap<String, int[]> px2 = new HashMap<>();
-
-        int[] ax = new int[kmer];
-        int[] bx = new int[5];
-
-        byte b[] = seq.getBytes();
+        // 2-bit code array: forward [0..l-1], sentinel [l]=4, reverse-complement [l+1..l+l]
+        byte[] b = seq.getBytes();
         for (i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];
         }
@@ -185,177 +221,171 @@ public void SetSequences(String[] seq, String[] sname) {
         for (i = 1; i < l + 1; i++) {
             b[l + i] = tables.cdnat2[b[l - i]];
         }
+
+        final long keyMask = (kmer >= 32) ? -1L : ((1L << (2 * kmer)) - 1L);
+        HashMap<Long, int[]> km = new HashMap<>(Math.min(l, 1 << 20));
+
+        int valid;
+        long key;
+
+        // ---- Pass 1: count k-mers on both strands ----
         numnonn = kmer - 1;
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                numnonn++;
-                s = seq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0] + 1;
-                    px2.put(s, new int[]{p, 0});
-                } else {
-                    px2.put(s, new int[]{1, 0});
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // forward: add new / increment
+            int c = b[i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    numnonn++;
+                    int[] v = km.get(key);
+                    if (v == null) {
+                        km.put(key, new int[]{1, 0});
+                    } else {
+                        v[0]++;
+                    }
                 }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
+            } else {
+                valid = 0;
+                key = 0;
             }
         }
-        //reverse
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0] + 1;
-                    px2.put(s, new int[]{p, 0});
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // reverse: increment existing only
+            int c = b[l + 1 + i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    int[] v = km.get(key);
+                    if (v != null) {
+                        v[0]++;
+                    }
                 }
-            }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
+            } else {
+                valid = 0;
+                key = 0;
             }
         }
 
+        // ---- Pass 2: mark repeated k-mers (total count > nblocks) ----
         t = 0;
         n = 0;
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = seq.substring(i - kmer + 1, i + 1);
-                p = px2.get(s)[0];
-                if (p > nblocks) {
-                    t++;
-                    n = n + p;
-                    px2.get(s)[0] = -p;
-                }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        //reverse
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0];
-                    if (p > nblocks) {
-                        t++;
-                        n = n + p;
-                        px2.get(s)[0] = -p;
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // forward
+            int c = b[i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    int[] v = km.get(key);
+                    if (v != null) {
+                        p = v[0];
+                        if (p > nblocks) {
+                            t++;
+                            n += p;
+                            v[0] = -p;
+                        }
                     }
                 }
-            }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
+            } else {
+                valid = 0;
+                key = 0;
             }
         }
-        if (n == 0 | t == 0) {
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // reverse
+            int c = b[l + 1 + i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    int[] v = km.get(key);
+                    if (v != null) {
+                        p = v[0];
+                        if (p > nblocks) {
+                            t++;
+                            n += p;
+                            v[0] = -p;
+                        }
+                    }
+                }
+            } else {
+                valid = 0;
+                key = 0;
+            }
+        }
+        if (n == 0 || t == 0) {
             return 0;
         }
 
+        // ---- Pass 3: collect occurrence positions into buckets ----
         int[] u = new int[n + 1];
         int[][] x1 = new int[t + 1][2];
         z = 1;
         t = 0;
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = seq.substring(i - kmer + 1, i + 1);
-                p = px2.get(s)[0];
-                if (p < 0) {
-                    px2.get(s)[0] = -px2.get(s)[0];
-                    if (px2.get(s)[0] > nblocks) {
-                        px2.get(s)[1] = z;
-                        u[z] = i + 1 - kmer;
-                        t++;
-                        u[0] = t;
-                        x1[t][1] = z;
-                        x1[t][0] = px2.get(s)[0];
-                        z = z + px2.get(s)[0];
-                    }
-                } else {
-                    if (p > nblocks) {
-                        px2.get(s)[1]++;
-                        u[px2.get(s)[1]] = i + 1 - kmer;
-                    }
-                }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        //reverse    
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0];
-                    if (p < 0) {
-                        px2.get(s)[0] = -px2.get(s)[0];
-                        if (px2.get(s)[0] > nblocks) {
-                            px2.get(s)[1] = z;
-                            u[z] = l + i + 2 - kmer;
-                            t++;
-                            u[0] = t;
-                            x1[t][1] = z;
-                            x1[t][0] = px2.get(s)[0];
-                            z = z + px2.get(s)[0];
-                        }
-                    } else {
-                        if (p > nblocks) {
-                            px2.get(s)[1]++;
-                            u[px2.get(s)[1]] = l + i + 2 - kmer;
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // forward
+            int c = b[i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    int[] v = km.get(key);
+                    if (v != null) {
+                        p = v[0];
+                        if (p < 0) {
+                            v[0] = -p;
+                            if (v[0] > nblocks) {
+                                v[1] = z;
+                                u[z] = i + 1 - kmer;
+                                t++;
+                                u[0] = t;
+                                x1[t][1] = z;
+                                x1[t][0] = v[0];
+                                z = z + v[0];
+                            }
+                        } else if (p > nblocks) {
+                            v[1]++;
+                            u[v[1]] = i + 1 - kmer;
                         }
                     }
                 }
+            } else {
+                valid = 0;
+                key = 0;
             }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
+        }
+        valid = 0;
+        key = 0;
+        for (i = 0; i < l; i++) {                 // reverse
+            int c = b[l + 1 + i];
+            if (c < 4) {
+                key = ((key << 2) | c) & keyMask;
+                if (++valid >= kmer) {
+                    int[] v = km.get(key);
+                    if (v != null) {
+                        p = v[0];
+                        if (p < 0) {
+                            v[0] = -p;
+                            if (v[0] > nblocks) {
+                                v[1] = z;
+                                u[z] = l + i + 2 - kmer;
+                                t++;
+                                u[0] = t;
+                                x1[t][1] = z;
+                                x1[t][0] = v[0];
+                                z = z + v[0];
+                            }
+                        } else if (p > nblocks) {
+                            v[1]++;
+                            u[v[1]] = l + i + 2 - kmer;
+                        }
+                    }
+                }
+            } else {
+                valid = 0;
+                key = 0;
             }
         }
 
@@ -678,12 +708,8 @@ public void SetSequences(String[] seq, String[] sname) {
 
         long duration = (System.nanoTime() - startTime) / 1000000000;
 
-        String reportfile = filePath + "_" + (n + 1) + ".gff";
-        String maskedfile = filePath + "_" + (n + 1) + ".msk";
-        if (nseq == 1) {
-            reportfile = filePath + ".gff";
-            maskedfile = filePath + ".msk";
-        }
+        String reportfile = outPath(n, ".gff");
+        String maskedfile = outPath(n, ".msk");
 
         byte[] m = new byte[l];
 
@@ -722,17 +748,13 @@ public void SetSequences(String[] seq, String[] sname) {
         }
 
         StringBuilder sr = new StringBuilder();
-        sr.append("#REPEATER2 (2024) by Ruslan Kalendar (ruslan.kalendar@helsinki.fi) https://github.com/rkalendar/Repeater\n");
+        sr.append("#REPEATER2 (2026) by Ruslan Kalendar (ruslan.kalendar@helsinki.fi) https://github.com/rkalendar/Repeater\n");
         sr.append("#kmer=").append(kmerln).append("\n").append("#Minimal repeat=").append(minlenblock).append("\n").append("#Repeat filter=").append(minlenseq).append("\n#Quick analysis is false\n");
         sr.append("#Sequence length (bp)=").append(l).append("\n");
         sr.append("#Sequence coverage by repeats ").append(String.format("%.2f", z)).append("%\n");
         sr.append("#Repeats search for: ").append(sname[n]).append("\n");
         sr.append("#Time taken: ").append(duration).append(" seconds\n\n");
-        if (SeqShow) {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        } else {
-            sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
-        }
+        sr.append("Seqid\tRepeat\tClusterID\tStart\tStop\tLength\tStrand\tPhase\tSequence").append("\n");
         if (v < l) {
             double d = ((l - v) * 100) / l;
             sr.append("#Sequence gap (bp)=").append(l - v).append(" (").append(String.format("%.3f", d)).append("%)\n");
@@ -787,11 +809,9 @@ public void SetSequences(String[] seq, String[] sname) {
                             sr = new StringBuilder();
                             if (z7[j + 1] > 0) {
                                 sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("+").append("\t").append(s0).append("\n");
-//                                sr.append(k).append("\t").append(z7[j] + 1).append("\t").append(x + 1).append("\t").append(z7[j + 1]).append("\t").append("\t").append(s0).append("\n");
                                 fileWriter.write(sr.toString());
                             } else {
                                 sr.append(sname[n]).append("\t").append(".").append("\t").append(k).append("\t").append(z7[j] - 1).append("\t").append(x + 1).append("\t").append(-z7[j + 1]).append("\t").append("-").append("\t").append(s0).append("\n");
-//                               sr.append(k).append("\t").append(x + 1).append("\t").append(-z7[j] - 1).append("\t").append(-z7[j + 1]).append("\t").append(s0).append("\n");
                                 fileWriter.write(sr.toString());
                             }
                         }
@@ -808,36 +828,46 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
 3. type - "repeat".
 4. start - The starting position of the feature in the sequence. The first base is numbered 1.
 5. stop - The ending position of the feature (inclusive).
-6. score - length 
+6. score - length
 7. strand - Valid entries include '+', '-', or '.' (for don't know/care).
 8. phase - If the feature is a coding exon, frame should be a number between 0-2 that represents the reading frame of the first base. If the feature is not a coding exon, the value should be '.'.
 9. attributes - All lines with the same group are linked together into a single item.
          */
     }
 
-    private void SavingPicture(int k, int n, int len, int dw, int dh) throws IOException {
+    // ------------------------------------------------------------------
+    //  Visualisation
+    // ------------------------------------------------------------------
+
+    private void SavingPicture(int k, int n, int len, int dw, int dh) {
+        if (imgFormat == FMT_NONE) {
+            return;
+        }
         int maxClusters = 500;
         int maxImageDimension = 120000;
         int minImageWidth = 4000;
         int minImageHeight = 100;
         int stepPadding = 20;
 
-        // Adjust number of clusters `b`
-        int b = Math.min(bb.size(), maxClusters); // Maximum of 1000 clusters
+        // Number of clusters to draw (guard against a missing/empty cluster list).
+        int b = (bb == null) ? 0 : Math.min(bb.size(), maxClusters);
 
-        // Adjust `z` (step between clusters) based on `b`
         int z = calculateClusterStep(b);
-        // Calculate dot size
         float dotSize = calculateDotSize(b);
-        //float dotSize =10;//'z;   
 
-        // Calculate width and height
         int width = calculateWidth(k, len, dw, maxImageDimension, minImageWidth);
         int height = calculateHeight(b, z, dh, maxImageDimension, minImageHeight, stepPadding);
 
+        int[] seqslen = new int[0];
         try {
-
-            SaveImage(k, n, len, b, z, width, height, dotSize, new int[0]);
+            // SVG first: it is lightweight and cannot exhaust memory, so it is
+            // produced even if a very large PNG allocation were to fail.
+            if (imgFormat == FMT_SVG || imgFormat == FMT_BOTH) {
+                SaveSVG(n, k, len, b, z, width, height, dotSize, seqslen);
+            }
+            if (imgFormat == FMT_PNG || imgFormat == FMT_BOTH) {
+                SavePNG(n, k, len, b, z, width, height, dotSize, seqslen);
+            }
         } catch (IOException e) {
             System.out.println("Error saving the picture: " + e.getMessage());
         }
@@ -883,44 +913,101 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         return Math.max(12.0f, dotSize);
     }
 
-    private void SaveImage(int k, int n, int l, int b, int z, int width, int height, float dotSize, int[] seqslen) throws IOException {
-        final int DPI = 1200;
-        final double inchToMeter = 0.0254;
+    /**
+     * Renders the repeat map onto a {@link Canvas}. PNG and SVG outputs share
+     * this single geometry pass so the two pictures are always identical.
+     */
+    private void render(Canvas cv, int k, int n, int l, int b, int z, int width, int height, float dotSize, int[] seqslen) {
         double nucleotidesPerPixel = (double) width / l;
 
-        String pngfile = filePath + "_" + (n + 1) + ".png";
-        if (nseq == 1) {
-            pngfile = filePath + ".png";
-        }
+        cv.background(width + 100, height + 200);
 
-        System.out.println("Saving picture " + (width + 100) + "x" + (height + 200) + " : " + pngfile);
-        BufferedImage image = new BufferedImage(width + 100, height + 200, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.setStroke(new BasicStroke(dotSize));
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, width + 100, height + 200);
-        g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Monospaced", Font.BOLD, 25));
+        drawAxis(cv, k, l, width, seqslen, dotSize);
 
-        drawLinesAndLabels(g2d, k, l, width, seqslen);
         if (seqslen.length > 0) {
             int x1 = 0;
             for (int i = 0; i < seqslen.length; i++) {
                 x1 = (int) (x1 * nucleotidesPerPixel);
-                g2d.drawLine(x1 + 50, 1, x1 + 50, 55);
-                g2d.drawString(sname[i], x1 + 65, 18);
-                g2d.drawString("1", x1 + 55, 50);
+                cv.line(x1 + 50, 1, x1 + 50, 55, Color.BLACK, dotSize);
+                cv.text(sname[i], x1 + 65, 18, Color.BLACK, 25, true);
+                cv.text("1", x1 + 55, 50, Color.BLACK, 25, true);
                 x1 = seqslen[i];
             }
         } else {
-            g2d.drawLine(50, 1, 50, 20);
-            g2d.drawString(sname[n], 65, 18);
+            cv.line(50, 1, 50, 20, Color.BLACK, dotSize);
+            cv.text(sname[n], 65, 18, Color.BLACK, 25, true);
         }
 
-        drawClusters(g2d, b, z, nucleotidesPerPixel);
+        drawClusters(cv, b, z, nucleotidesPerPixel, dotSize);
+    }
+
+    private void drawAxis(Canvas cv, int k, int l, int width, int[] seqslen, float stroke) {
+        cv.line(50, 55, width + 50, 55, Color.BLACK, stroke); // top scale line
+        int f = k + 5;
+        int w = width / f;
+        int d = l / f;
+        for (int i = 0; i <= f; i++) {
+            cv.line(i * w + 50, 45, i * w + 50, 55, Color.BLACK, stroke);
+            int v = 1 + i * d;
+            if (v > l) {
+                v = l;
+            }
+            for (int j = 1; j < seqslen.length; j++) {
+                if (v >= seqslen[j - 1] && v <= seqslen[j]) {
+                    v = 1 + v - seqslen[j - 1];
+                    break;
+                }
+            }
+            cv.text(String.format("%,d", v), 63 + i * w, 44, Color.BLACK, 25, true);
+        }
+    }
+
+    private void drawClusters(Canvas cv, int b, int z, double w1, float stroke) {
+        final Color DarkGreen = new Color(0, 102, 0);
+        final Color Brown = new Color(102, 51, 0);
+        for (int i = 0; i < b; i++) {
+            int[] z7 = bb.get(i);
+
+            // Brown "footprint" lines marking the cluster span.
+            for (int j = 1; j < z7.length - 1; j += 2) {
+                int x1 = 50 + (int) (z7[j] * w1);
+                int x2 = (z7[j + 1] > 0) ? 50 + (int) ((z7[j] + z7[j + 1]) * w1) : 50 + (int) ((z7[j] - z7[j + 1]) * w1);
+                cv.line(x1, 60, x2, 60, Brown, stroke);
+            }
+
+            int y = (i > 10) ? 190 + (i * z) : 88 + (i * 20);
+
+            for (int j = 1; j < z7.length - 1; j += 2) {
+                int x1 = 50 + (int) (z7[j] * w1);
+                int x2 = 50;
+                Color c;
+                if (z7[j + 1] > 0) {
+                    x2 = x2 + (int) ((z7[j] + z7[j + 1]) * w1);
+                    c = (i == 0) ? DarkGreen : Color.BLUE;
+                } else {
+                    x2 = x2 + (int) ((z7[j] - z7[j + 1]) * w1);
+                    c = Color.RED;
+                }
+                cv.line(x1, y, x2, y, c, stroke);
+                if (i > 1) {
+                    cv.text(String.valueOf(i), x2 + 10, y, c, 13, false);
+                }
+            }
+        }
+    }
+
+    private void SavePNG(int n, int k, int l, int b, int z, int width, int height, float dotSize, int[] seqslen) throws IOException {
+        final int DPI = 1200;
+        final double inchToMeter = 0.0254;
+
+        String pngfile = outPath(n, ".png");
+        System.out.println("Saving picture (PNG) " + (width + 100) + "x" + (height + 200) + " : " + pngfile);
+
+        BufferedImage image = new BufferedImage(width + 100, height + 200, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+        render(new G2DCanvas(g2d), k, n, l, b, z, width, height, dotSize, seqslen);
         g2d.dispose();
 
-        // PNG writer
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
         if (!writers.hasNext()) {
             throw new IllegalStateException("No PNG writer found");
@@ -952,70 +1039,192 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         writer.dispose();
     }
 
-    private void drawLinesAndLabels(Graphics2D g2d, int k, int l, int width, int[] seqslen) {
-        g2d.drawLine(50, 55, width + 50, 55); // top line (x1, y, x2, y)
-        int f = k + 5;
-        int w = width / f;
-        int d = l / f;
-        for (int i = 0; i <= f; i++) {
-            g2d.drawLine(i * w + 50, 45, i * w + 50, 55);
-            int v = 1 + i * d;
-            if (v > l) {
-                v = l;
-            }
-            for (int j = 1; j < seqslen.length; j++) {
-                if (v >= seqslen[j - 1] && v <= seqslen[j]) {
-                    v = 1 + v - seqslen[j - 1];
-                    break;
-                }
-            }
-            g2d.drawString(String.format("%,d", v), 63 + i * w, 44);
+    private void SaveSVG(int n, int k, int l, int b, int z, int width, int height, float dotSize, int[] seqslen) throws IOException {
+        String svgfile = outPath(n, ".svg");
+        System.out.println("Saving picture (SVG) " + (width + 100) + "x" + (height + 200) + " : " + svgfile);
+
+        SVGCanvas cv = new SVGCanvas();
+        cv.setTitle("REPEATER2: " + sname[n]);
+        render(cv, k, n, l, b, z, width, height, dotSize, seqslen);
+
+        // Write with an explicit UTF-8 writer to match the declared XML encoding
+        // (sequence names may contain non-ASCII characters).
+        try (Writer fw = new OutputStreamWriter(new FileOutputStream(svgfile), StandardCharsets.UTF_8)) {
+            fw.write(cv.document());
         }
     }
 
-    private void drawClusters(Graphics2D g2d, int b, int z, double w1) {
-        // Color DarkRed = new Color(153, 0, 0); //https://teaching.csse.uwa.edu.au/units/CITS1001/colorinfo.html
-        Color DarkGreen = new Color(0, 102, 0);
-        Color Brown = new Color(102, 51, 0);
-        g2d.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        for (int i = 0; i < b; i++) {
-            int[] z7 = bb.get(i);
+    /**
+     * Builds the result file path: {@code <outputDir>/<inputBaseName>[ _index ]<ext>}.
+     * When {@code outputDir} is unset, the current working directory is used.
+     */
+    private String outPath(int n, String ext) {
+        String base = new File(filePath).getName();
+        String name = (nseq == 1) ? base + ext : base + "_" + (n + 1) + ext;
+        if (outputDir == null || outputDir.isEmpty()) {
+            return name;
+        }
+        return new File(outputDir, name).getPath();
+    }
 
-            // Gray lines at height 22
-            for (int j = 1; j < z7.length - 1; j += 2) {
-                int x1 = 50 + (int) (z7[j] * w1);
-                int x2 = (z7[j + 1] > 0) ? 50 + (int) ((z7[j] + z7[j + 1]) * w1) : 50 + (int) ((z7[j] - z7[j + 1]) * w1);
-                g2d.setColor(Brown);
-                g2d.drawLine(x1, 60, x2, 60); // draw dark gray line (x1, y, x2, y)
+    // ------------------------------------------------------------------
+    //  Drawing back-ends: one geometry, two output formats.
+    // ------------------------------------------------------------------
+
+    private interface Canvas {
+        void background(int w, int h);
+
+        void line(int x1, int y1, int x2, int y2, Color c, float stroke);
+
+        void text(String s, int x, int y, Color c, int fontSize, boolean bold);
+    }
+
+    /** Raster back-end (PNG) drawing onto a {@link Graphics2D}. */
+    private static final class G2DCanvas implements Canvas {
+
+        private final Graphics2D g;
+        private float curStroke = Float.NaN;
+        private int curSize = -1;
+        private boolean curBold = false;
+
+        G2DCanvas(Graphics2D g) {
+            this.g = g;
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+
+        @Override
+        public void background(int w, int h) {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, w, h);
+        }
+
+        @Override
+        public void line(int x1, int y1, int x2, int y2, Color c, float stroke) {
+            if (stroke != curStroke) {
+                g.setStroke(new BasicStroke(stroke));
+                curStroke = stroke;
             }
+            g.setColor(c);
+            g.drawLine(x1, y1, x2, y2);
+        }
 
-            //   int y = (i > 1) ? 120 + (i * z) : 80 + (i * 20);
-            int y = (i > 10) ? 190 + (i * z) : 88 + (i * 20);
+        @Override
+        public void text(String s, int x, int y, Color c, int fontSize, boolean bold) {
+            if (fontSize != curSize || bold != curBold) {
+                g.setFont(new Font("Monospaced", bold ? Font.BOLD : Font.PLAIN, fontSize));
+                curSize = fontSize;
+                curBold = bold;
+            }
+            g.setColor(c);
+            g.drawString(s, x, y);
+        }
+    }
 
-            for (int j = 1; j < z7.length - 1; j += 2) {
-                int x1 = 50 + (int) (z7[j] * w1);
-                int x2 = 50;
-                if (z7[j + 1] > 0) {
-                    x2 = x2 + (int) ((z7[j] + z7[j + 1]) * w1);
-                    if (i == 0) {
-                        g2d.setColor(DarkGreen);
-                    } else {
-                        g2d.setColor(Color.BLUE);
-                    }
-                } else {
-                    x2 = x2 + (int) ((z7[j] - z7[j + 1]) * w1);
-                    g2d.setColor(Color.RED);
-                }
-                g2d.drawLine(x1, y, x2, y); // draw blue line
-                if (i > 1) {
-                    g2d.drawString(String.valueOf(i), x2 + 10, y);
+    /** Vector back-end (SVG). Scales without loss and produces tiny files. */
+    private static final class SVGCanvas implements Canvas {
+
+        private final StringBuilder sb = new StringBuilder(1 << 16);
+        private int w = 0;
+        private int h = 0;
+        private String title = "";
+
+        void setTitle(String t) {
+            this.title = (t == null) ? "" : t;
+        }
+
+        @Override
+        public void background(int w, int h) {
+            this.w = w;
+            this.h = h;
+            sb.append("<rect x=\"0\" y=\"0\" width=\"").append(w).append("\" height=\"").append(h).append("\" fill=\"#ffffff\"/>\n");
+        }
+
+        @Override
+        public void line(int x1, int y1, int x2, int y2, Color c, float stroke) {
+            if (x1 == x2 && y1 == y2) {
+                // A zero-length line is invisible in most SVG viewers, but
+                // Graphics2D paints a full stroke x stroke square (CAP_SQUARE).
+                // Emit that square as a <rect> so sub-pixel repeat marks that
+                // show in the PNG are not silently dropped from the SVG.
+                double half = stroke / 2.0;
+                sb.append("<rect x=\"").append(strokeStr((float) (x1 - half)))
+                        .append("\" y=\"").append(strokeStr((float) (y1 - half)))
+                        .append("\" width=\"").append(strokeStr(stroke))
+                        .append("\" height=\"").append(strokeStr(stroke))
+                        .append("\" fill=\"").append(rgb(c)).append("\"/>\n");
+                return;
+            }
+            sb.append("<line x1=\"").append(x1).append("\" y1=\"").append(y1)
+                    .append("\" x2=\"").append(x2).append("\" y2=\"").append(y2)
+                    .append("\" stroke=\"").append(rgb(c)).append("\" stroke-width=\"").append(strokeStr(stroke)).append("\"/>\n");
+        }
+
+        @Override
+        public void text(String s, int x, int y, Color c, int fontSize, boolean bold) {
+            sb.append("<text x=\"").append(x).append("\" y=\"").append(y)
+                    .append("\" fill=\"").append(rgb(c)).append("\" font-family=\"monospace\" font-size=\"").append(fontSize).append("\"");
+            if (bold) {
+                sb.append(" font-weight=\"bold\"");
+            }
+            sb.append(">").append(escapeXml(s)).append("</text>\n");
+        }
+
+        String document() {
+            StringBuilder out = new StringBuilder(sb.length() + 256);
+            out.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+            out.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"").append(w).append("\" height=\"").append(h)
+                    .append("\" viewBox=\"0 0 ").append(w).append(" ").append(h).append("\">\n");
+            if (!title.isEmpty()) {
+                out.append("<title>").append(escapeXml(title)).append("</title>\n");
+            }
+            out.append("<g stroke-linecap=\"square\">\n");
+            out.append(sb);
+            out.append("</g>\n</svg>\n");
+            return out.toString();
+        }
+
+        private static String rgb(Color c) {
+            return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+        }
+
+        private static String strokeStr(float s) {
+            if (s == Math.rint(s)) {
+                return Integer.toString((int) s);
+            }
+            return Float.toString(s);
+        }
+
+        private static String escapeXml(String s) {
+            StringBuilder b = new StringBuilder(s.length());
+            for (int i = 0; i < s.length(); i++) {
+                char ch = s.charAt(i);
+                switch (ch) {
+                    case '&':
+                        b.append("&amp;");
+                        break;
+                    case '<':
+                        b.append("&lt;");
+                        break;
+                    case '>':
+                        b.append("&gt;");
+                        break;
+                    case '"':
+                        b.append("&quot;");
+                        break;
+                    case '\'':
+                        b.append("&apos;");
+                        break;
+                    default:
+                        b.append(ch);
                 }
             }
-
+            return b.toString();
         }
     }
 
     private String filePath;
+    private String outputDir = null;
+    private int imgFormat = FMT_BOTH;
     public int nseq;
     public int iwidth = 0;
     public int iheight = 0;
@@ -1024,8 +1233,8 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
     private int nblocks = 1;
     private int numnonn = 0;   // calculated non-N bases at the sequence
     private final int ssrlen = 30;
-    private int minlenblock = 50;   // initial sequence length user control  
-    private int minlenseq = 50;     // sequence length 
+    private int minlenblock = 50;   // initial sequence length user control
+    private int minlenseq = 50;     // sequence length
     private final int mnblock = 20;
     private int imgcompession = 5; // 1-20
     private int kmerln = 12;

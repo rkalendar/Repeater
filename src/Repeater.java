@@ -8,7 +8,6 @@ public class Repeater {
     public static void main(String[] args) {
         if (args.length > 0) {
             String infile = args[0]; // file path or Folder
-            String s = String.join(" ", args).toLowerCase() + " ";
             int kmer = 18;
             int minlen = 30;
             int seqlen = 60;
@@ -19,10 +18,50 @@ public class Repeater {
             boolean seqshow = false;
             boolean ssrrun = false;
             boolean maskonly = false;
+            int imgformat = PatternRepeatsSearching.FMT_BOTH;
+            // By default results are saved to the current working directory.
+            String outdir = System.getProperty("user.dir");
 
             System.out.println("Current Directory: " + System.getProperty("user.dir"));
             System.out.println("Command-line arguments:");
             System.out.println("Target file or Folder: " + infile);
+
+            // Parse the output folder from the raw arguments (so the path keeps
+            // its original case) and assemble the option string from the remaining
+            // option arguments only. The input path (args[0]) and the out=/outdir=
+            // folder value are deliberately excluded: a file path may legitimately
+            // contain '=' (e.g. a folder named "kmer=20") which would otherwise be
+            // mis-parsed as an option and silently corrupt the analysis.
+            StringBuilder optbuf = new StringBuilder();
+            for (int a = 1; a < args.length; a++) {
+                String la = args[a].toLowerCase();
+                if (la.startsWith("out=")) {
+                    outdir = args[a].substring(4);
+                } else if (la.startsWith("outdir=")) {
+                    outdir = args[a].substring(7);
+                } else {
+                    optbuf.append(la).append(" ");
+                }
+            }
+            String s = optbuf.toString();
+
+            // Image format: format=both|png|svg|none (default both).
+            if (s.contains("format=")) {
+                int j = s.indexOf("format=");
+                int x = s.indexOf(" ", j);
+                if (x > j) {
+                    switch (s.substring(j + 7, x).trim()) {
+                        case "png" ->
+                            imgformat = PatternRepeatsSearching.FMT_PNG;
+                        case "svg" ->
+                            imgformat = PatternRepeatsSearching.FMT_SVG;
+                        case "none", "no", "off" ->
+                            imgformat = PatternRepeatsSearching.FMT_NONE;
+                        default ->
+                            imgformat = PatternRepeatsSearching.FMT_BOTH;
+                    }
+                }
+            }
 
             if (s.contains("ssronly")) {
                 ssrrun = true;
@@ -57,6 +96,11 @@ public class Repeater {
                 if (kmer < 12) {
                     kmer = 12;
                 }
+                if (kmer > 32) {
+                    // 2-bit packing into a 64-bit key supports at most 32 bases.
+                    System.out.println("Note: kmer capped at 32 (maximum supported).");
+                    kmer = 32;
+                }
             }
             if (s.contains("min=")) {
                 int j = s.indexOf("min=");
@@ -90,7 +134,7 @@ public class Repeater {
                 int x = s.indexOf(" ", j);
                 if (x > j) {
                     String[] d = s.substring(j + 6, x).split("x");
-                    if (d.length > 0) {
+                    if (d.length > 1) {
                         width = StrToInt(d[0]);
                         hight = StrToInt(d[1]);
                         if (width < 1000) {
@@ -102,13 +146,28 @@ public class Repeater {
                         if (hight < 100) {
                             hight = 100;
                         }
-                        if (hight == 0 | width == 0) {
+                        if (hight == 0 || width == 0) {
                             width = 0;
                             hight = 0;
                         }
                     }
                 }
             }
+
+            // Make sure the output directory exists and really is a directory.
+            if (outdir != null && !outdir.isEmpty()) {
+                File od = new File(outdir);
+                if (od.exists()) {
+                    if (!od.isDirectory()) {
+                        System.err.println("Output path is not a directory: " + outdir + " — using current directory instead.");
+                        outdir = System.getProperty("user.dir");
+                    }
+                } else if (!od.mkdirs()) {
+                    System.err.println("Could not create output directory: " + outdir + " — using current directory instead.");
+                    outdir = System.getProperty("user.dir");
+                }
+            }
+            System.out.println("Output directory: " + outdir);
 
             File folder = new File(infile);
             if (folder.exists() && (folder.isDirectory() || folder.isFile())) {
@@ -124,19 +183,19 @@ public class Repeater {
                     for (String nfile : filelist) {
                         if (nfile != null) {
                             try {
-                                SaveResult(nfile, kmer, minlen, seqlen, gap, flanksshow, seqshow, ssrrun, width, hight, maskonly);
+                                SaveResult(nfile, kmer, minlen, seqlen, gap, flanksshow, seqshow, ssrrun, width, hight, maskonly, outdir, imgformat);
                             } catch (Exception e) {
                                 System.err.println("Failed to open file: " + nfile);
                             }
                         }
                     }
                 } else {
-                    SaveResult(infile, kmer, minlen, seqlen, gap, flanksshow, seqshow, ssrrun, width, hight, maskonly);
+                    SaveResult(infile, kmer, minlen, seqlen, gap, flanksshow, seqshow, ssrrun, width, hight, maskonly, outdir, imgformat);
                 }
             }
 
         } else {
-            System.out.println("REPEATER2 (2024-2025) by Ruslan Kalendar (ruslan.kalendar@helsinki.fi)\nhttps://github.com/rkalendar/Repeater\n");
+            System.out.println("REPEATER2 (2024-2026) by Ruslan Kalendar (ruslan.kalendar@helsinki.fi)\nhttps://github.com/rkalendar/Repeater\n");
             System.out.println("Basic usage:");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile>/<inputfolderpath> <optional_commands>");
             System.out.println("Common options:");
@@ -145,9 +204,11 @@ public class Repeater {
             System.out.println("sln=90\trepeat block length (default sln=60), it can be equal to 'kmer'");
             System.out.println("flangs=100\textend the flanks of the repeat with an appropriate length (100 nt) (default flangs=0)");
             System.out.println("image=10000x300\t (by default, the dimensionality of the image is automatically determined)");
+            System.out.println("format=both\timage output format: both|png|svg|none (default both)");
+            System.out.println("out=<path>\toutput folder for results (default: current directory)");
             System.out.println("-seqshow\textract repeat sequences");
             System.out.println("-ssronly\tanalyzing only the SSR/telomers loci\n");
-            System.out.println("-maskonly\tonly generate masked output (skip clustering)\n");            
+            System.out.println("-maskonly\tonly generate masked output (skip clustering)\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> -ssronly -seqshow flanks=100");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> kmer=18 min=30 sln=100 -nomask\n");
             System.out.println("java -jar \\Repeater2\\dist\\Repeater2.jar <inputfile> ssr=true seqshow=true flanks=100");
@@ -175,10 +236,18 @@ public class Repeater {
                 break;
             }
         }
-        return (Integer.parseInt(r.toString()));
+        // Parse as long and clamp so an out-of-range value (e.g. a 10+ digit
+        // number) cannot throw NumberFormatException and abort the program.
+        long v;
+        try {
+            v = Long.parseLong(r.toString());
+        } catch (NumberFormatException e) {
+            v = Integer.MAX_VALUE;
+        }
+        return (int) Math.min(v, Integer.MAX_VALUE);
     }
 
-    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int gap, int flanksshow, boolean seqshow, boolean ssrrun, int width, int hight, boolean maskonly) {
+    private static void SaveResult(String infile, int kmer, int minlen, int seqlen, int gap, int flanksshow, boolean seqshow, boolean ssrrun, int width, int hight, boolean maskonly, String outdir, int imgformat) {
         try {
             long startTime = System.nanoTime();
             byte[] binaryArray = Files.readAllBytes(Paths.get(infile));
@@ -207,6 +276,8 @@ public class Repeater {
             s2.SetShowSeq(seqshow);
             s2.SetFlanks(flanksshow);
             s2.SetFileName(infile);
+            s2.SetOutputDir(outdir);
+            s2.SetImageFormat(imgformat);
             if (width > 0 && hight > 0) {
                 s2.SetImage(width, hight);
             }
