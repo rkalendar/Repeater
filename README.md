@@ -80,7 +80,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 ### Prerequisites
 
 - **Operating System**: Platform independent (Windows, macOS, Linux)
-- **Java Runtime**: Java 25 or higher
+- **Java Runtime**: Java 26 or higher
 - **Memory**: 4GB minimum, 16-64GB recommended for large genomes
 - **Disk Space**: Sufficient space for input genomes and output files
 
@@ -89,7 +89,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 #### Option 1: Download from Oracle
 
 1. Visit [Java Downloads](https://www.oracle.com/java/technologies/downloads/)
-2. Download Java 25 or newer for your operating system
+2. Download Java 26 or newer for your operating system
 3. Follow the installation wizard
 4. Verify installation:
    ```bash
@@ -111,16 +111,16 @@ conda config --set channel_priority strict
 
 **Step 2: Create Java Environment**
 
-Create a dedicated environment with OpenJDK 25:
+Create a dedicated environment with OpenJDK 26:
 
 ```bash
-conda create -n java25 openjdk=25
+conda create -n java26 openjdk=26
 ```
 
 **Step 3: Activate Environment**
 
 ```bash
-conda activate java25
+conda activate java26
 ```
 
 **Step 4: Verify Installation**
