@@ -70,7 +70,7 @@ REPEATER is a powerful genome-wide tool designed for sensitive *de novo* identif
 
 ## 🌐 Online Access
 
-Try REPEATER online without installation:  
+Try TotalRepeats online without installation:  
 **[https://primerdigital.com/tools/repeats.html](https://primerdigital.com/tools/repeats.html)**
 
 The online version provides a user-friendly interface for analyzing sequences up to moderate genome sizes.
