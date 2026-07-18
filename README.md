@@ -82,7 +82,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 ### Prerequisites
 
 - **Operating System**: Platform independent (Windows, macOS, Linux)
-- **Java Runtime**: Java 25 or higher
+- **Java Runtime**: Java 26 or higher
 - **Memory**: 4GB minimum, 16-64GB recommended for large genomes
 - **Disk Space**: Sufficient space for input genomes and output files
 
