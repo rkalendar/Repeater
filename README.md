@@ -3,7 +3,7 @@
 **A Genome-Wide Tool for Rapid *De Novo* Identification, Profiling, Masking, and Visualization of Interspersed and Tandem Repetitive Sequences**
 
 [![DOI](https://img.shields.io/badge/DOI-10.1177%2F11779322241306391-blue)](https://doi.org/10.1177/11779322241306391)
-[![Java](https://img.shields.io/badge/Java-25+-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
+[![Java](https://img.shields.io/badge/Java-26+-orange.svg)](https://www.oracle.com/java/technologies/downloads/)
 [![Platform](https://img.shields.io/badge/Platform-Independent-green.svg)]()
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
 
@@ -91,7 +91,7 @@ The online version provides a user-friendly interface for analyzing sequences up
 #### Option 1: Download from Oracle
 
 1. Visit [Java Downloads](https://www.oracle.com/java/technologies/downloads/)
-2. Download Java 25 or newer for your operating system
+2. Download Java 26 or newer for your operating system
 3. Follow the installation wizard
 4. Verify installation:
    ```bash
@@ -113,16 +113,16 @@ conda config --set channel_priority strict
 
 **Step 2: Create Java Environment**
 
-Create a dedicated environment with OpenJDK 25:
+Create a dedicated environment with OpenJDK 26:
 
 ```bash
-conda create -n java25 openjdk=25
+conda create -n java26 openjdk=26
 ```
 
 **Step 3: Activate Environment**
 
 ```bash
-conda activate java25
+conda activate java26
 ```
 
 **Step 4: Verify Installation**
@@ -133,7 +133,7 @@ java -version
 
 Expected output:
 ```
-openjdk version "25" ...
+openjdk version "26" ...
 ```
 
 ### Setting Java PATH
