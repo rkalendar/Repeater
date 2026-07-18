@@ -1,4 +1,5 @@
 import java.awt.BasicStroke;
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,7 +8,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -171,7 +171,7 @@ public final class PatternRepeatsSearching {
 
         String maskedfile = outPath(n, ".msk");
 
-        try (FileWriter fileWriter = new FileWriter(maskedfile)) {
+        try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(maskedfile))) {
             System.out.println("Saving masked file: " + maskedfile);
 
             byte[] c = seq[n].getBytes();
@@ -187,7 +187,7 @@ public final class PatternRepeatsSearching {
             String seqStr = new String(c);
             for (int i = 0; i < seqStr.length(); i += 70) {
                 int end = Math.min(i + 70, seqStr.length());
-                fileWriter.write(seqStr.substring(i, end));
+                fileWriter.write(seqStr, i, end - i);
                 fileWriter.write("\n");
             }
 
@@ -205,6 +205,9 @@ public final class PatternRepeatsSearching {
      * ordering and the {@code > nblocks} threshold are preserved exactly, so the
      * downstream clustering and the emitted GFF/MSK are identical to the previous
      * String/HashMap implementation, just faster and with far less allocation.
+     * The k-mer index is a primitive {@link KmerMap} (no {@code Long} boxing, no
+     * per-k-mer {@code int[]}); the forward strand seeds it via {@code count(...)}
+     * and the reverse strand only increments existing counts via {@code find(...)}.
      */
     private int FindAllRepeats(String seq, int kmer) {
         int k, n, t, i, h, e, y, z, w, x, q, r, p;
@@ -212,7 +215,9 @@ public final class PatternRepeatsSearching {
         int g = l + l + 1;
 
         // 2-bit code array: forward [0..l-1], sentinel [l]=4, reverse-complement [l+1..l+l]
-        byte[] b = seq.getBytes();
+        // Sequence is already ASCII-filtered upstream, so ISO-8859-1 is exact and
+        // avoids the UTF-8 encoder pass on multi-megabase inputs.
+        byte[] b = seq.getBytes(StandardCharsets.ISO_8859_1);
         for (i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];
         }
@@ -223,7 +228,7 @@ public final class PatternRepeatsSearching {
         }
 
         final long keyMask = (kmer >= 32) ? -1L : ((1L << (2 * kmer)) - 1L);
-        HashMap<Long, int[]> km = new HashMap<>(Math.min(l, 1 << 20));
+        KmerMap km = new KmerMap(Math.min((long) l, 1L << 20));
 
         int valid;
         long key;
@@ -238,12 +243,7 @@ public final class PatternRepeatsSearching {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
                     numnonn++;
-                    int[] v = km.get(key);
-                    if (v == null) {
-                        km.put(key, new int[]{1, 0});
-                    } else {
-                        v[0]++;
-                    }
+                    km.count(key);
                 }
             } else {
                 valid = 0;
@@ -257,9 +257,9 @@ public final class PatternRepeatsSearching {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        v[0]++;
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        km.cnt[s]++;
                     }
                 }
             } else {
@@ -278,13 +278,13 @@ public final class PatternRepeatsSearching {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        p = v[0];
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        p = km.cnt[s];
                         if (p > nblocks) {
                             t++;
                             n += p;
-                            v[0] = -p;
+                            km.cnt[s] = -p;
                         }
                     }
                 }
@@ -300,13 +300,13 @@ public final class PatternRepeatsSearching {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        p = v[0];
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        p = km.cnt[s];
                         if (p > nblocks) {
                             t++;
                             n += p;
-                            v[0] = -p;
+                            km.cnt[s] = -p;
                         }
                     }
                 }
@@ -331,23 +331,23 @@ public final class PatternRepeatsSearching {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        p = v[0];
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        p = km.cnt[s];
                         if (p < 0) {
-                            v[0] = -p;
-                            if (v[0] > nblocks) {
-                                v[1] = z;
+                            km.cnt[s] = -p;
+                            if (km.cnt[s] > nblocks) {
+                                km.pos[s] = z;
                                 u[z] = i + 1 - kmer;
                                 t++;
                                 u[0] = t;
                                 x1[t][1] = z;
-                                x1[t][0] = v[0];
-                                z = z + v[0];
+                                x1[t][0] = km.cnt[s];
+                                z = z + km.cnt[s];
                             }
                         } else if (p > nblocks) {
-                            v[1]++;
-                            u[v[1]] = i + 1 - kmer;
+                            km.pos[s]++;
+                            u[km.pos[s]] = i + 1 - kmer;
                         }
                     }
                 }
@@ -363,23 +363,23 @@ public final class PatternRepeatsSearching {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        p = v[0];
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        p = km.cnt[s];
                         if (p < 0) {
-                            v[0] = -p;
-                            if (v[0] > nblocks) {
-                                v[1] = z;
+                            km.cnt[s] = -p;
+                            if (km.cnt[s] > nblocks) {
+                                km.pos[s] = z;
                                 u[z] = l + i + 2 - kmer;
                                 t++;
                                 u[0] = t;
                                 x1[t][1] = z;
-                                x1[t][0] = v[0];
-                                z = z + v[0];
+                                x1[t][0] = km.cnt[s];
+                                z = z + km.cnt[s];
                             }
                         } else if (p > nblocks) {
-                            v[1]++;
-                            u[v[1]] = l + i + 2 - kmer;
+                            km.pos[s]++;
+                            u[km.pos[s]] = l + i + 2 - kmer;
                         }
                     }
                 }
@@ -713,7 +713,7 @@ public final class PatternRepeatsSearching {
 
         byte[] m = new byte[l];
 
-        try (FileWriter fileWriter = new FileWriter(maskedfile)) {
+        try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(maskedfile))) {
             System.out.println("Saving masked file: " + maskedfile);
             for (int i = 0; i < bb.size(); i++) {
                 int[] z7 = bb.get(i);
@@ -741,7 +741,7 @@ public final class PatternRepeatsSearching {
             String seqStr = new String(c);
             for (int i = 0; i < seqStr.length(); i += 70) {
                 int end = Math.min(i + 70, seqStr.length());
-                fileWriter.write(seqStr.substring(i, end));
+                fileWriter.write(seqStr, i, end - i);
                 fileWriter.write("\n");
             }
 
@@ -760,7 +760,7 @@ public final class PatternRepeatsSearching {
             sr.append("#Sequence gap (bp)=").append(l - v).append(" (").append(String.format("%.3f", d)).append("%)\n");
         }
 
-        try (FileWriter fileWriter = new FileWriter(reportfile)) {
+        try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(reportfile))) {
             System.out.println("Saving report file: " + reportfile);
             fileWriter.write(sr.toString());
             for (int i = 0; i < bb.size(); i++) {
@@ -1127,6 +1127,8 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
         private int w = 0;
         private int h = 0;
         private String title = "";
+        // Only a handful of distinct Colors are ever emitted; memoize their hex.
+        private final java.util.HashMap<Color, String> colorHex = new java.util.HashMap<>();
 
         void setTitle(String t) {
             this.title = (t == null) ? "" : t;
@@ -1183,8 +1185,27 @@ Generic Feature Format Version 3 (GFF3) https://github.com/The-Sequence-Ontology
             return out.toString();
         }
 
-        private static String rgb(Color c) {
-            return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+        private static final char[] HEX = "0123456789abcdef".toCharArray();
+
+        // Memoized "#rrggbb"; byte-identical to String.format("#%02x%02x%02x", r, g, b)
+        // but without the per-element format parse + varargs boxing.
+        private String rgb(Color c) {
+            String hex = colorHex.get(c);
+            if (hex == null) {
+                hex = toHex(c);
+                colorHex.put(c, hex);
+            }
+            return hex;
+        }
+
+        private static String toHex(Color c) {
+            final int v = c.getRGB();
+            return new String(new char[]{
+                '#',
+                HEX[(v >> 20) & 0xF], HEX[(v >> 16) & 0xF],
+                HEX[(v >> 12) & 0xF], HEX[(v >> 8) & 0xF],
+                HEX[(v >> 4) & 0xF], HEX[v & 0xF]
+            });
         }
 
         private static String strokeStr(float s) {

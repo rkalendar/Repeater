@@ -99,7 +99,8 @@ public class LowComplexitySequence {
     }
 
     public void FindAllSSRs(String seq, int telomer) {
-        byte b[] = seq.getBytes();
+        // DNA input is ASCII; ISO-8859-1 skips the UTF-8 encoder pass on large inputs.
+        byte b[] = seq.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
         mapb = new byte[seq.length()];
         b = SimpleRepeatsMasking(b, telomer);
         ArrayList<int[]> b1 = new ArrayList<>();

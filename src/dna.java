@@ -1,34 +1,9 @@
 
 public final class dna {
 
-    public static String AntisenseDNA(String source) {
-        byte[] b = source.getBytes();
-        for (int i = 0; i < source.length(); i++) {
-            if (tables.cdna[b[i]] > 0) {
-                if (b[i] < 97) {
-                    b[i] = (byte) (b[i] + 32);
-                }
-                b[i] = tables.cdna[b[i]];
-            }
-        }
-        return new String(b);
-    }
-
-    public static String ReverseSeq(String source) {
-        return new StringBuilder(source).reverse().toString();
-    }
-
-    public static String ReverseSeq(char[] source) {
-        StringBuilder s = new StringBuilder();
-        return s.append(source).reverse().toString();
-    }
-
-    public static String ComplementDNA(String source) {
-        return new StringBuilder(AntisenseDNA(source)).reverse().toString();
-    }
-
     public static String ComplementDNA2(String source) {
-        byte[] b = source.getBytes();
+        // DNA substrings are ASCII; ISO-8859-1 is an exact, allocation-light round trip.
+        byte[] b = source.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
         int l = source.length();
         int n = l / 2;
         for (int i = 0; i < n; i++) {
@@ -43,6 +18,6 @@ public final class dna {
                 b[n] = tables.cdna[b[n]];
             }
         }
-        return new String(b);
+        return new String(b, java.nio.charset.StandardCharsets.ISO_8859_1);
     }
 }

@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public final class ReadingSequencesFiles {
 
     public ReadingSequencesFiles(byte[] s) {
@@ -34,7 +32,6 @@ public final class ReadingSequencesFiles {
         if (source == null) {
             return;
         }
-        dnay = new double[128];
 
         int l = source.length;
         int s = 0; // total length
@@ -57,22 +54,26 @@ public final class ReadingSequencesFiles {
         }
         name_seq = new String[ns];
         sequence = new String[ns];
+        // One reusable scratch buffer. The first pass counted `s` = every valid base
+        // byte in the whole file (headers included), so `s` is >= any single sequence's
+        // compacted length. Compacting straight from `source` into this buffer removes
+        // the two Arrays.copyOfRange allocations per sequence (the raw slice and the
+        // compacted slice), leaving only each String's own backing storage.
+        final byte[] buf = new byte[s];
         int n = -1;
         int t = 0;
 
         for (int i = 0; i < l; i++) {
             if (source[i] == 62) {
                 if (t > 0) {
-
-                    byte[] d = Arrays.copyOfRange(source, t, i - 1); //public static short[] copyOfRange(short[] original, int from, int to)
                     int x = 0;
-                    for (int j = 0; j < d.length; j++) {
-                        if (tables.cdn[d[j]] > 0) {
-                            d[x] = tables.cdn[d[j]];
-                            x++;
+                    for (int j = t; j < i - 1; j++) {   // exclusive end i-1, as before
+                        byte cc = tables.cdn[source[j]];
+                        if (cc > 0) {
+                            buf[x++] = cc;
                         }
                     }
-                    sequence[n] = new String(Arrays.copyOfRange(d, 0, x));
+                    sequence[n] = new String(buf, 0, x, java.nio.charset.StandardCharsets.ISO_8859_1);
                     lSeqs = lSeqs + x;
                 }
                 n++;
@@ -86,16 +87,15 @@ public final class ReadingSequencesFiles {
                 }
             }
         }
-        byte[] d = Arrays.copyOfRange(source, t, l);
         int x = 0;
-        for (int j = 0; j < d.length; j++) {
-            if (tables.cdn[d[j]] > 0) {
-                d[x] = tables.cdn[d[j]];
-                x++;
+        for (int j = t; j < l; j++) {
+            byte cc = tables.cdn[source[j]];
+            if (cc > 0) {
+                buf[x++] = cc;
             }
         }
         lSeqs = lSeqs + x;
-        sequence[n] = new String(Arrays.copyOfRange(d, 0, x));
+        sequence[n] = new String(buf, 0, x, java.nio.charset.StandardCharsets.ISO_8859_1);
     }
 
     public void SetFolder(String p) {
@@ -104,43 +104,10 @@ public final class ReadingSequencesFiles {
         }
     }
 
-    public double getA() {
-        return (dnay[97] + (dnay[109] + dnay[114] + dnay[119]) / 2 + (dnay[118] + dnay[104] + dnay[100]) / 3 + dnay[110] / 4);
-    }
-
-    public double getT() {
-        return (dnay[116] + dnay[117] + (dnay[121] + dnay[107] + dnay[119]) / 2 + (dnay[98] + dnay[104] + dnay[100]) / 3 + dnay[110] / 4);
-    }
-
-    public double getC() {
-        return (dnay[99] + (dnay[109] + dnay[115] + dnay[121]) / 2 + (dnay[98] + dnay[118] + dnay[104]) / 3 + dnay[110] / 4);
-    }
-
-    public double getG() {
-        return (dnay[103] + dnay[105] + ((dnay[115] + dnay[114] + dnay[107]) / 2) + ((dnay[98] + dnay[118] + dnay[100]) / 3) + dnay[110] / 4);
-    }
-
-    public double getN() {
-        return dnay[110];
-    }
-
-    public double getR() {
-        return (dnay[103] + dnay[105] + dnay[97] + dnay[114] + ((dnay[115] + dnay[107] + dnay[109] + dnay[119] + dnay[110]) / 2) + ((dnay[98] + dnay[118] + dnay[118] + dnay[104] + dnay[100] + dnay[100]) / 3));
-    }
-
-    public double getY() {
-        return (dnay[99] + dnay[116] + dnay[117] + dnay[121] + (dnay[109] + dnay[115] + dnay[110] + dnay[107] + dnay[119]) / 2 + (dnay[98] + dnay[118] + dnay[104] + dnay[98] + dnay[104] + dnay[100]) / 3);
-    }
-
     public int getLength() {
         return (int) lSeqs;
     }
-
-    public double getCG() {
-        return lSeqs < 1 ? 0 : (100 * (dnay[103] + dnay[105] + dnay[99] + dnay[115] + ((dnay[114] + dnay[107] + dnay[109] + dnay[121] + dnay[110]) / 2) + ((dnay[98] + dnay[118] + dnay[100] + dnay[98] + dnay[118] + dnay[104]) / 3))) / lSeqs;
-    }
     private String fld = "";
-    private double[] dnay;
     private String[] name_seq;
     private String[] sequence;
     private byte[] source = null;

@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class MaskingPairwiseAlignmentSequence {
@@ -18,16 +17,11 @@ public class MaskingPairwiseAlignmentSequence {
         while (i < n) {
             if (mask[i] == 1) {
                 int start = i;
-                int end = i;
-                int highCount = 0;
-
                 while (i < n && mask[i] == 1) {
-                    if (mask[i] == 1) {
-                        highCount++;
-                    }
-                    end = i;
                     i++;
                 }
+                int end = i - 1;              // last index of this run
+                int highCount = end - start + 1;
 
                 if (highCount > kmer) {
                     int seqStart = start;
@@ -68,22 +62,12 @@ public class MaskingPairwiseAlignmentSequence {
         return result;
     }
 
-    public byte[] ArrayTrim(byte[] srcArray, int n) {
-        byte[] destArray = new byte[n];
-        System.arraycopy(srcArray, 0, destArray, 0, n);
-        return destArray;
-    }
-
-    public byte[] ArrayExtendByte(byte[] srcArray, int n) {
-        byte[] destArray = new byte[srcArray.length + n];
-        System.arraycopy(srcArray, 0, destArray, 0, srcArray.length);
-        return destArray;
-    }
-
 // - No String substrings: 2-bit k-mer keys (A/C/G/T -> 0..3), skip windows with code 4 (N/gap).
-// - HashMap<Long,int[]>: entry[0]=count (negated while "marked"), entry[1]=rolling index into u[].
-// - Fixed (n == 0 || t == 0) and clarified loops.
-// - Keeps your reverse-complement layout b[0..l-1], b[l]=4, b[l+1..l+l].
+// - Primitive open-addressing map (KmerMap): key=packed 2-bit k-mer,
+//   cnt = occurrence count (negated while "marked"), pos = rolling index into u[].
+//   This avoids boxing every rolling key to a Long and allocating an int[] per
+//   distinct k-mer, which dominated cost/GC on large genomes.
+// - Keeps the reverse-complement layout b[0..l-1], b[l]=4, b[l+1..l+l].
     private byte[] MaskingL(String seq, int kmer, int minlenblock) {
         if (seq == null || kmer <= 0 || minlenblock <= 0) {
             return new byte[0];
@@ -102,7 +86,9 @@ public class MaskingPairwiseAlignmentSequence {
         final byte[] msk = new byte[g];
 
         // Build code array: forward [0..l-1], sentinel [l]=4, reverse-complement [l+1..l+l]
-        byte[] b = seq.getBytes();           // expect ASCII ACGTN
+        // Sequence is already filtered to ASCII base codes upstream, so
+        // ISO-8859-1 is exact and skips the UTF-8 encoder pass on large inputs.
+        byte[] b = seq.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
         for (int i = 0; i < l; i++) {
             b[i] = tables.dx2[b[i]];  // 0..4
         }
@@ -115,27 +101,22 @@ public class MaskingPairwiseAlignmentSequence {
         // rolling key helpers
         final long keyMask = (kmer >= 32) ? -1L : ((1L << (2 * kmer)) - 1L);
 
-        // Count all valid k-mers on both strands
-        java.util.HashMap<Long, int[]> km = new java.util.HashMap<>(Math.min(l, 1 << 20));
+        // Count all valid k-mers on both strands. Distinct k-mers <= 2*(l-kmer+1);
+        // the map grows on demand, so a modest initial capacity is fine.
+        final KmerMap km = new KmerMap(Math.min((long) l, 1L << 20));
         int valid = 0;
         long key = 0;
 
-        // Track "no-gaps" windows like your original (if you use this elsewhere)
+        // Track "no-gaps" windows like the original (used elsewhere via NoGapsLength()).
         nogapslen = kmer - 1;
 
-        // Forward msk
+        // Forward
         for (int i = 0; i < l; i++) {
             int c = b[i];
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    long k = key;
-                    int[] v = km.get(k);
-                    if (v == null) {
-                        km.put(k, new int[]{1, 0});
-                    } else {
-                        v[0]++;
-                    }
+                    km.count(key);
                     nogapslen++;
                 }
             } else {
@@ -143,7 +124,7 @@ public class MaskingPairwiseAlignmentSequence {
                 key = 0;
             }
         }
-        // Reverse msk
+        // Reverse
         valid = 0;
         key = 0;
         for (int i = 0; i < l; i++) {
@@ -151,13 +132,7 @@ public class MaskingPairwiseAlignmentSequence {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    long k = key;
-                    int[] v = km.get(k);
-                    if (v == null) {
-                        km.put(k, new int[]{1, 0});
-                    } else {
-                        v[0]++;
-                    }
+                    km.count(key);
                 }
             } else {
                 valid = 0;
@@ -174,11 +149,11 @@ public class MaskingPairwiseAlignmentSequence {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null && v[0] > 1) {
+                    int s = km.find(key);
+                    if (s >= 0 && km.cnt[s] > 1) {
                         distinct++;
-                        total += v[0];
-                        v[0] = -v[0];
+                        total += km.cnt[s];
+                        km.cnt[s] = -km.cnt[s];
                     }
                 }
             } else {
@@ -193,11 +168,11 @@ public class MaskingPairwiseAlignmentSequence {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int[] v = km.get(key);
-                    if (v != null && v[0] > 1) {
+                    int s = km.find(key);
+                    if (s >= 0 && km.cnt[s] > 1) {
                         distinct++;
-                        total += v[0];
-                        v[0] = -v[0];
+                        total += km.cnt[s];
+                        km.cnt[s] = -km.cnt[s];
                     }
                 }
             } else {
@@ -224,22 +199,22 @@ public class MaskingPairwiseAlignmentSequence {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
                     int pos = i + 1 - kmer;
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        if (v[0] < 0) {                       // first time we open this k-mer bucket
-                            v[0] = -v[0];
-                            if (v[0] > 1) {
-                                v[1] = z;
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        if (km.cnt[s] < 0) {                  // first time we open this k-mer bucket
+                            km.cnt[s] = -km.cnt[s];
+                            if (km.cnt[s] > 1) {
+                                km.pos[s] = z;
                                 u[z] = pos;
                                 t++;
                                 u[0] = t;
-                                x1[t][0] = v[0];
+                                x1[t][0] = km.cnt[s];
                                 x1[t][1] = z;
-                                z += v[0];
+                                z += km.cnt[s];
                             }
-                        } else if (v[0] > 1) {                // subsequent occurrences
-                            v[1]++;
-                            u[v[1]] = pos;
+                        } else if (km.cnt[s] > 1) {           // subsequent occurrences
+                            km.pos[s]++;
+                            u[km.pos[s]] = pos;
                         }
                     }
                 }
@@ -256,23 +231,23 @@ public class MaskingPairwiseAlignmentSequence {
             if (c < 4) {
                 key = ((key << 2) | c) & keyMask;
                 if (++valid >= kmer) {
-                    int pos = l + i + 2 - kmer;   // your indexing for RC slice
-                    int[] v = km.get(key);
-                    if (v != null) {
-                        if (v[0] < 0) {
-                            v[0] = -v[0];
-                            if (v[0] > 1) {
-                                v[1] = z;
+                    int pos = l + i + 2 - kmer;   // indexing for the RC slice
+                    int s = km.find(key);
+                    if (s >= 0) {
+                        if (km.cnt[s] < 0) {
+                            km.cnt[s] = -km.cnt[s];
+                            if (km.cnt[s] > 1) {
+                                km.pos[s] = z;
                                 u[z] = pos;
                                 t++;
                                 u[0] = t;
-                                x1[t][0] = v[0];
+                                x1[t][0] = km.cnt[s];
                                 x1[t][1] = z;
-                                z += v[0];
+                                z += km.cnt[s];
                             }
-                        } else if (v[0] > 1) {
-                            v[1]++;
-                            u[v[1]] = pos;
+                        } else if (km.cnt[s] > 1) {
+                            km.pos[s]++;
+                            u[km.pos[s]] = pos;
                         }
                     }
                 }
@@ -286,7 +261,7 @@ public class MaskingPairwiseAlignmentSequence {
             return java.util.Arrays.copyOf(msk, l);
         }
 
-        // Pairwise extension per bucket (kept your original logic)
+        // Pairwise extension per bucket (original logic preserved)
         for (int bi = 1; bi <= t; bi++) {
             int count = x1[bi][0];
             int start = x1[bi][1];
@@ -305,7 +280,7 @@ public class MaskingPairwiseAlignmentSequence {
                             if (y < l) {
                                 msk[y + r] = 1;
                             } else {
-                                msk[l - y + l - r] = 1; // your RC mapping
+                                msk[l - y + l - r] = 1; // RC mapping
                             }
                         }
                     }
@@ -313,15 +288,12 @@ public class MaskingPairwiseAlignmentSequence {
             }
         }
 
-        int x = -1;          // start index of current block
-        int y = -1;          // last index seen in the current/previous block
         int r = 0;           // current gap length (zeros after a block)
         boolean inBlock = false;
 
         for (int i = 0; i < l; i++) {
             if (msk[i] > 0) {
                 if (!inBlock) {           // new block
-                    x = i;
                     inBlock = true;
                     r = 0;
                 } else {                  // continuing after a gap or same block
@@ -331,28 +303,23 @@ public class MaskingPairwiseAlignmentSequence {
                             for (int j = i - r; j < i; j++) {
                                 msk[j] = 1;
                             }
-                        } else {
-                            // long gap: start a fresh block at i
-                            x = i;
                         }
                         r = 0;
                     }
                 }
-                y = i;
             } else {
                 if (inBlock) {            // count gap only after a block has started
                     r++;
                 }
             }
         }
-        // return ArrayTrim(msk, l);
         return java.util.Arrays.copyOf(msk, l);
     }
 
     private static int extendBlock(byte[] b, int l, int g, int x, int y, int kmer) {
         int h = kmer, e = 0, p = 2;
         for (;;) {
-            // bounds (mirror your conditions)
+            // bounds (mirror the original conditions)
             if ((y > l && y + h > g - 1) || (y <= l && y + h > l - 1)) {
                 break;
             }
@@ -379,306 +346,6 @@ public class MaskingPairwiseAlignmentSequence {
             h++;
         }
         return h;
-    }
-
-    private byte[] Masking(String seq, int kmer, int minlenblock) {
-        int k, n, t, i, h, e, y, z, x, j, r, p;
-        int l = seq.length();
-        int g = l + l + 1;
-
-        final byte[] msk = new byte[g];
-
-        String s;
-        String aseq = dna.ComplementDNA(seq);
-        HashMap<String, int[]> px2 = new HashMap<>();
-
-        int[] ax = new int[kmer];
-        int[] bx = new int[5];
-        byte b[] = seq.getBytes();
-        for (i = 0; i < l; i++) {
-            b[i] = tables.dx2[b[i]];
-        }
-        b = ArrayExtendByte(b, l + 1);
-        b[l] = 4;
-        for (i = 1; i < l + 1; i++) {
-            b[l + i] = tables.cdnat2[b[l - i]];
-        }
-        nogapslen = kmer - 1;
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                nogapslen++;
-                s = seq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0] + 1;
-                    px2.put(s, new int[]{p, 0});
-                } else {
-                    px2.put(s, new int[]{1, 0});
-                }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        //reverse
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0] + 1;
-                    px2.put(s, new int[]{p, 0});
-                }
-            }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-
-        t = 0;
-        n = 0;
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = seq.substring(i - kmer + 1, i + 1);
-                p = px2.get(s)[0];
-                if (p > 1) {
-                    t++;
-                    n = n + p;
-                    px2.get(s)[0] = -p;
-                }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        //reverse
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0];
-                    if (p > 1) {
-                        t++;
-                        n = n + p;
-                        px2.get(s)[0] = -p;
-                    }
-                }
-            }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        if (n == 0 | t == 0) {
-            return java.util.Arrays.copyOf(msk, l);
-        }
-
-        int[] u = new int[n + 1];
-        int[][] x1 = new int[t + 1][2];
-        z = 1;
-        t = 0;
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[i];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[i];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = seq.substring(i - kmer + 1, i + 1);
-                p = px2.get(s)[0];
-                if (p < 0) {
-                    px2.get(s)[0] = -px2.get(s)[0];
-                    if (px2.get(s)[0] > 1) {
-                        px2.get(s)[1] = z;
-                        u[z] = i + 1 - kmer;
-                        t++;
-                        u[0] = t;
-                        x1[t][1] = z;
-                        x1[t][0] = px2.get(s)[0];
-                        z = z + px2.get(s)[0];
-                    }
-                } else {
-                    if (p > 1) {
-                        px2.get(s)[1]++;
-                        u[px2.get(s)[1]] = i + 1 - kmer;
-                    }
-                }
-            }
-            bx[b[i + 1 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-        //reverse    
-        bx = new int[5];
-        for (i = 0; i < kmer - 1; i++) {
-            ax[i] = b[l + i + 1];
-            bx[ax[i]]++;
-        }
-        for (i = kmer - 1; i < l; i++) {
-            ax[kmer - 1] = b[l + i + 1];
-            bx[ax[kmer - 1]]++;
-            if (bx[4] == 0) {
-                s = aseq.substring(i - kmer + 1, i + 1);
-                if (px2.containsKey(s)) {
-                    p = px2.get(s)[0];
-                    if (p < 0) {
-                        px2.get(s)[0] = -px2.get(s)[0];
-                        if (px2.get(s)[0] > 1) {
-                            px2.get(s)[1] = z;
-                            u[z] = l + i + 2 - kmer;
-                            t++;
-                            u[0] = t;
-                            x1[t][1] = z;
-                            x1[t][0] = px2.get(s)[0];
-                            z = z + px2.get(s)[0];
-                        }
-                    } else {
-                        if (p > 1) {
-                            px2.get(s)[1]++;
-                            u[px2.get(s)[1]] = l + i + 2 - kmer;
-                        }
-                    }
-                }
-            }
-            bx[b[l + i + 2 - kmer]]--;
-            for (j = 0; j < kmer - 1; j++) {
-                ax[j] = ax[j + 1];
-            }
-        }
-
-        if (t == 0) {
-            return java.util.Arrays.copyOf(msk, l);
-        }
-
-        for (i = 1; i < t + 1; i++) {
-            for (k = 1; k <= x1[i][0]; k++) {
-                x = u[x1[i][1] + k - 1];
-
-                for (r = k + 1; r <= x1[i][0]; r++) {
-                    y = u[x1[i][1] + r - 1];
-
-                    if (msk[x] == 0 && msk[y] == 0) {
-                        h = kmer;
-                        e = 0; // no mistmatches
-                        p = 2; // fully complement 2 bases
-
-                        for (;;) {
-                            if (y > l) {
-                                if (y + h > g - 1) {
-                                    break;
-                                }
-                            } else {
-                                if (y + h > l - 1) {
-                                    break;
-                                }
-                            }
-                            if (x < l) {
-                                if (x + h > l - 1) {
-                                    break;
-                                }
-                            } else {
-                                if (x + h > g - 1) {
-                                    break;
-                                }
-                            }
-                            if (b[x + h] == 4 && b[y + h] == 4) {
-                                break;
-                            }
-
-                            if (b[x + h] == b[y + h]) {
-                                if (p > 0) {
-                                    e = 0;
-                                }
-                                p++;
-                            } else {
-                                if (e > 2) {
-                                    h = h - 3;
-                                    break;
-                                }
-                                e++;
-                                p = 0;
-                            }
-                            h++;
-                        }
-                        if (h > minlenblock) {
-                            for (r = 0; r < h; r++) {
-                                msk[x + r] = 1;
-                                if (y < l) {
-                                    msk[y + r] = 1;
-                                } else {
-                                    msk[l - y + l - r] = 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        x = -1;          // start index of current block
-        y = -1;          // last index seen in the current/previous block
-        r = 0;           // current gap length (zeros after a block)
-        boolean inBlock = false;
-
-        for (i = 0; i < l; i++) {
-            if (msk[i] > 0) {
-                if (!inBlock) {           // new block
-                    x = i;
-                    inBlock = true;
-                    r = 0;
-                } else {                  // continuing after a gap or same block
-                    if (r > 0) {          // we just crossed a gap
-                        if (r <= minlenblock) {
-                            // fill only the gap: [i - r, i)
-                            for (j = i - r; j < i; j++) {
-                                msk[j] = 1;
-                            }
-                        } else {
-                            // long gap: start a fresh block at i
-                            x = i;
-                        }
-                        r = 0;
-                    }
-                }
-                y = i;
-            } else {
-                if (inBlock) {            // count gap only after a block has started
-                    r++;
-                }
-            }
-        }
-        return java.util.Arrays.copyOf(msk, l);
     }
 
     public long NoGapsLength() {
